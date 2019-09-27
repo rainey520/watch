@@ -35,7 +35,7 @@ public interface IDevNoticeService
      * @param devNotice 公司消息通知信息
      * @return 结果
      */
-	public int insertDevNotice(DevNotice devNotice, HttpServletRequest request);
+	public int insertDevNotice(DevNotice devNotice);
 	
 	/**
      * 修改公司消息通知

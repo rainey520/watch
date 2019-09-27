@@ -47,10 +47,6 @@
             <a class="btn btn-default" onclick="showExcList()" shiro:hasPermission="production:workExceptionList:add">
                 <i class="fa fa-bars"></i> 异常类型
             </a>
-            <a class="btn btn-primary btn-edit disabled" onclick="edit()"
-               shiro:hasPermission="production:workExceptionList:add">
-                <i class="fa fa-edit"></i> 修改
-            </a>
         </div>
         <div class="col-sm-12 select-table table-striped">
             <table id="bootstrap-table" data-mobile-responsive="true"></table>
@@ -60,7 +56,6 @@
 <div th:include="include :: footer"></div>
 <script th:inline="javascript">
     var editFlag = [[${@permission.hasPermi('production:workExceptionList:add')}]];
-    var removeFlag = [[${@permission.hasPermi('production:workExceptionList:add')}]];
     var prefix = ctx + "production/workExceptionList";
 
     $(function () {
@@ -79,9 +74,7 @@
             showToggle:true,
             sortName:'createTime',
             sortOrder:'desc',
-            columns: [{
-                checkbox: true
-            },
+            columns: [
                 {
                     field: 'id',
                     title: '',

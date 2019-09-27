@@ -66,6 +66,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
+import java.math.BigDecimal;
 import java.util.*;
 
 /**
@@ -571,6 +572,19 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
         //查询对应的产线信息
         ProductionLine line = productionLineMapper.selectProductionLineById(order.getLineId());
         if (line == null) return null;
+        //判断产线是否是手动
+        float standardHour = order.getSignHuor();
+        //达成率默认为0
+        order.setReachRate(0.0F);
+        if (order.getWorkorderStatus() == WorkConstants.WORK_STATUS_STARTING && order.getCumulativeNumber() != null) {
+            //计数标准产量
+            if (order.getOperationStatus() == WorkConstants.OPERATION_STATUS_STARTING) {//工单正在开始中
+                standardHour += TimeUtil.getDateDel(order.getSignTime(), new Date());
+            }
+            int standardTotal = (int) (order.getProductStandardHour() * standardHour);
+            order.setReachRate(standardTotal == 0 ? 0.0F : new BigDecimal(((float) order.getCumulativeNumber() / ((float) standardTotal)) * 100).setScale(2, BigDecimal.ROUND_HALF_UP).floatValue());
+        }
+        order.setSignHuor(standardHour);
         return order;
     }
 

@@ -61,12 +61,15 @@ public class DevNoticeServiceImpl implements IDevNoticeService {
      * @return 结果
      */
     @Override
-    public int insertDevNotice(DevNotice devNotice, HttpServletRequest request) {
-        User user = JwtUtil.getTokenUser(request);
-        devNotice.setCreateId(user.getUserId().intValue()); // 设置创建者
-        devNotice.setCompanyId(user.getCompanyId()); // 消息所属公司
-        devNotice.setCreateTime(new Date()); // 消息创建时间
-        devNotice.setNoticeStatus(NoticeConstants.NOTICE_NO_PUBLISH); // 设置未发布
+    public int insertDevNotice(DevNotice devNotice) {
+        User user = JwtUtil.getUser();
+        if (user == null) {
+            return 0;
+        }
+        devNotice.setCreateId(user.getUserId().intValue());
+        devNotice.setCompanyId(user.getCompanyId());
+        devNotice.setCreateTime(new Date());
+        devNotice.setNoticeStatus(NoticeConstants.NOTICE_NO_PUBLISH);
         return devNoticeMapper.insertDevNotice(devNotice);
     }
 

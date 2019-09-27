@@ -32,7 +32,9 @@ import java.util.Map;
 @RequestMapping("/production/report")
 public class ReportController extends BaseController {
 
-    /** logger */
+    /**
+     * logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(ReportController.class);
 
     private String prefix = "production/report";
@@ -68,7 +70,7 @@ public class ReportController extends BaseController {
                         index = bis.read(buffer);
                     }
                 } catch (Exception e) {
-                    LOGGER.error("下载文件出现异常：" +e.getMessage());
+                    LOGGER.error("下载文件出现异常：" + e.getMessage());
                     // e.printStackTrace();
                 } finally {
                     if (bis != null) {
@@ -174,13 +176,11 @@ public class ReportController extends BaseController {
     public AjaxResult appReportData(@RequestBody AppReport appReport) {
         try {
             if (appReport != null) {
-                if (appReport.getWlSign().equals(WorkConstants.SING_LINE)) {
-                    return AjaxResult.success("请求成功", reportService.lineReport(appReport.getLineId(), appReport.getProductCode(), appReport.getStartTime(), appReport.getEndTime()));
-                }
+                return AjaxResult.success("请求成功", reportService.lineReport(appReport.getLineId(), appReport.getProductCode(), appReport.getStartTime(), appReport.getEndTime()));
             }
             return error();
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("app导出报表出现异常：" + e.getMessage());
             return error();
         }
     }

@@ -150,7 +150,7 @@
                         if (row.abolish == 1) {
                             return '<span style="color: red;font-weight: bold">' + value + '</span>'
                         }
-                        return '<span style="font-weight: bold;color:#1E0FBE">' + value + '</span>';
+                        return '<a href="javascript:void(0)" onclick="showWorkOrderDetail(\''+ row.id +'\')"><span style="font-weight: bold;color:#1E0FBE">' + value + '</span></a>';
                     }
                 },
                 {
@@ -447,6 +447,12 @@
     function showExcInfoList() {
         var url = ctx + "production/workExceptionList";
         $.modal.open("查看异常列表", url);
+    }
+
+
+    function showWorkOrderDetail(id) {
+        var url = prefix + "/showWorkOrderDetail/" + id;
+        $.modal.open("工单详情", url, 900, 620);
     }
 
 </script>

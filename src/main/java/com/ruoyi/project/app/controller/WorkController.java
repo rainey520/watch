@@ -4,6 +4,8 @@ import com.ruoyi.common.exception.BusinessException;
 import com.ruoyi.framework.web.domain.AjaxResult;
 import com.ruoyi.project.production.devWorkOrder.domain.DevWorkOrder;
 import com.ruoyi.project.production.devWorkOrder.service.IDevWorkOrderService;
+import com.ruoyi.project.production.filesource.domain.FileSourceInfo;
+import com.ruoyi.project.production.filesource.service.IFileSourceInfoService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +31,9 @@ public class WorkController {
 
     @Autowired
     private IDevWorkOrderService workOrderService;
+
+    @Autowired
+    private IFileSourceInfoService fileSourceInfoService;
 
     /**
      * 编辑保存工单
@@ -56,6 +61,15 @@ public class WorkController {
             return AjaxResult.error(e.getMessage());
         }
         return AjaxResult.error();
+    }
+
+    /**
+     * 查看历史报表信息
+     */
+    @RequestMapping("/appSelectHistoryReport")
+    public AjaxResult appSelectHistoryReport(@RequestBody FileSourceInfo fileSourceInfo){
+        fileSourceInfo.setSaveType(14);
+        return AjaxResult.success(fileSourceInfoService.selectFileSourceInfoList(fileSourceInfo));
     }
 
 }

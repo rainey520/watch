@@ -97,7 +97,7 @@
                                                                                         id="line-live-work-id" readonly></label>
                                                     </td>
                                                     <td align="right"><label>工单数量:<input type="number"
-                                                                                         id="line-live-work-num"></label>
+                                                                                         id="line-live-work-num" readonly="readonly"></label>
                                                     </td>
                                                     <td align="right"><label>产品编码:<input type="text" readonly
                                                                                          id="line-live-work-product-code"></label>
@@ -124,7 +124,7 @@
                                                     <td align="right"><label>直通率[%]:<input type="number"
                                                                                            id="line-live-work-ztl"></label>
                                                     </td>
-                                                    <td align="right"><label>达成率[%]:<input type="number"
+                                                    <td align="right"><label>达成率[%]:<input type="number" readonly="readonly"
                                                                                            id="line-live-work-dcl"></label>
                                                     </td>
                                                 </tr>
@@ -591,7 +591,7 @@
         $("#line-live-work-gbbl").val(item.overtimeRace == null?1.5:item.overtimeRace)//加班倍率
         $("#line-live-work-ygrs").val(item.peopleNumber);//用工人数
         $("#line-live-work-trcl").val(item.putIntoNumber);//投入数量
-        $("#line-live-work-scgs").val(item.signHuor);//生产工时
+        $("#line-live-work-scgs").val(item.signHuor.toFixed(2))//生产工时
         if(item.startTime){
             $("#start-time").text("实际开始时间:"+item.startTime);//时间开始时
         }else{

@@ -1,5 +1,7 @@
 package com.ruoyi.project.app.controller;
 
+import com.ruoyi.common.utils.StringUtils;
+import com.ruoyi.framework.web.domain.AjaxResult;
 import com.ruoyi.project.device.devNotice.domain.DevNotice;
 import com.ruoyi.project.device.devNotice.service.IDevNoticeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,12 +33,24 @@ public class AppNoticeController {
     public Map<String, Object> list(@RequestBody DevNotice notice) {
         Map<String, Object> map = new HashMap<>(16);
         if (notice != null) {
-            map.put("data",noticeService.selectNoticeList(notice));
-            map.put("code",0);
+            map.put("data", noticeService.selectNoticeList(notice));
+            map.put("code", 0);
             return map;
         }
-        map.put("msg","请求失败");
-        map.put("code",1);
+        map.put("msg", "请求失败");
+        map.put("code", 1);
         return map;
+    }
+
+    /**
+     * 发送消息接口
+     */
+    @RequestMapping("/sendMsg")
+    public AjaxResult sendMsg(@RequestBody DevNotice notice) {
+        if (notice != null && StringUtils.isNotEmpty(notice.getNoticeContent())) {
+            int i = noticeService.insertDevNotice(notice);
+            return i > 0 ? AjaxResult.success() : AjaxResult.error();
+        }
+        return AjaxResult.error();
     }
 }

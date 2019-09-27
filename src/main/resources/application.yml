@@ -135,16 +135,16 @@ gen:
   tablePrefix: tab_
 
 page:
-#  url: http://47.106.177.50:89/t/
+#  url: http://47.106.177.50:8081/t/
   url: http://172.16.30.55:8081/t/
 
 img:
-#  url: http://47.106.177.50:89/profile/avatar/
+#  url: http://47.106.177.50:8081/profile/avatar/
   url: http://172.16.30.55:8081/profile/avatar/
 
 file:
-#  url: http://47.106.177.50:89/profile/upload/
-#  iso: http://47.106.177.50:89/profile/
+#  url: http://47.106.177.50:8081/profile/upload/
+#  iso: http://47.106.177.50:8081/profile/
   url: http://172.16.30.55:8081/profile/upload/
   iso: http://172.16.30.55:8081/profile/
 

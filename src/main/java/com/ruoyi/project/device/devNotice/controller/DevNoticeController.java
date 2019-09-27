@@ -77,8 +77,8 @@ public class DevNoticeController extends BaseController {
     @Log(title = "公司消息通知", businessType = BusinessType.INSERT)
     @PostMapping("/add")
     @ResponseBody
-    public AjaxResult addSave(DevNotice devNotice, HttpServletRequest request) {
-        return toAjax(devNoticeService.insertDevNotice(devNotice,request));
+    public AjaxResult addSave(DevNotice devNotice) {
+        return toAjax(devNoticeService.insertDevNotice(devNotice));
     }
 
     /**
