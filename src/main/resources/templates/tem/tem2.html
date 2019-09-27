@@ -64,11 +64,6 @@
 <div id="wrapper" class="container" th:style="${#strings.isEmpty(info.pageBackImg)?'background-image: url(/js/bk.jpg)':'background-image: url('+info.pageBackImg+')'} ">
     <div id="main_div" style="position: fixed;top: 6px;left: 25px;font-size:24px; color:#fff; cursor: pointer;z-index: 9999"
          onclick="closeWin()">返回</div>
-    <div style="position: fixed;top: 6px;left: 25px" id="main_pc">
-        <span th:if="${#strings.isEmpty(company.comLogo)}" style="font-size: 24px;color: #fff;top: 16px;">请上传公司logo</span>
-        <img th:if="${not #strings.isEmpty(company.comLogo)}" width="100" style="border-radius: 10px;margin-top: 15px;"
-             th:src="${company.comLogo}"/>
-    </div>
     <div class="page-header" style="padding-bottom:0px;margin: 0px 0px 5px 0px;text-align: center;color: #fff;">
         <ul class="nav nav-pills nav-justified">
             <li role="presentation">
@@ -164,41 +159,41 @@
                         <tbody id="add-xq-table-body" style="font-size: 28px;"></tbody>
                     </table>
                     <div class="row" style="padding: 0px 15px;height: 45%">
-                        <div class="col-md-6" style="padding: 0px;text-align: center;height: 100%">
-                            <div class="col-md-3" style="padding: 0px;text-align: center">
-                                <a href="#" class="thumbnail" >
-                                    <img id="data-line-pe-img" th:src="${info.line.edUserInfo != null?info.line.edUserInfo.avatar:'....'}" alt="PE">
-                                    <span style="font-size: 24px;font-weight: bold;color: #000;display: block">PE:<span id="data-line-pe" th:utext="${info.line.edUserInfo != null?info.line.edUserInfo.userName:'请设置PE'}"></span></span>
-                                    <span id="data-line-pe-dh" style="font-size: 24px;font-weight: bold;color: #000"
-                                          th:utext="${info.line.edUserInfo != null?info.line.edUserInfo.loginName:''}"></span>
-                                </a>
-                            </div>
-                            <div class="col-md-3" style="padding: 0px;text-align: center">
-                                <a href="#" class="thumbnail" >
-                                    <img id="data-line-ipqc-img"  th:src="${info.line.ipqcUserInfo != null?info.line.ipqcUserInfo.avatar:'....'}" alt="IPQC">
-                                    <span style="font-size: 24px;font-weight: bold;color: #000;display: block">IPQC:<span id="data-line-ipqc" th:utext="${info.line.ipqcUserInfo != null?info.line.ipqcUserInfo.userName:'请设置IPQC'}"></span></span>
-                                    <span id="data-line-ipqc-dh" style="font-size: 24px;font-weight: bold;color: #000"
-                                          th:utext="${info.line.ipqcUserInfo != null?info.line.ipqcUserInfo.loginName:''}"></span>
-                                </a>
-                            </div>
-                            <div class="col-md-3" style="padding: 0px;text-align: center">
-                                <a href="#" class="thumbnail" >
-                                    <img id="data-line-me-img"  th:src="${info.line.meUserInfo != null?info.line.meUserInfo.avatar:'....'}" alt="ME">
-                                    <span style="font-size: 24px;font-weight: bold;color: #000;display: block">ME:<span id="data-line-me" th:utext="${info.line.meUserInfo != null?info.line.meUserInfo.userName:'请设置ME'}"></span></span>
-                                    <span id="data-line-me-dh" style="font-size: 24px;font-weight: bold;color: #000"
-                                          th:utext="${info.line.meUserInfo != null?info.line.meUserInfo.loginName:''}"></span>
-                                </a>
-                            </div>
-                            <div class="col-md-3" style="padding: 0px;text-align: center">
-                                <a href="#" class="thumbnail" >
-                                    <img id="data-line-te-img"  th:src="${info.line.teUserInfo != null?info.line.teUserInfo.avatar:'....'}" alt="TE">
-                                    <span style="font-size: 24px;font-weight: bold;color: #000;display: block">TE:<span id="data-line-te" th:utext="${info.line.teUserInfo != null?info.line.teUserInfo.userName:'请设置TE'}"></span></span>
-                                    <span id="data-line-te-dh" style="font-size: 24px;font-weight: bold;color: #000"
-                                          th:utext="${info.line.teUserInfo != null?info.line.teUserInfo.loginName:''}"></span>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="col-md-6" style="padding: 0px;text-align: center;height: 100%">
+                        <!--<div class="col-md-6" style="padding: 0px;text-align: center;height: 100%">-->
+                            <!--<div class="col-md-3" style="padding: 0px;text-align: center">-->
+                                <!--<a href="#" class="thumbnail" >-->
+                                    <!--<img id="data-line-pe-img" th:src="${info.line.edUserInfo != null?info.line.edUserInfo.avatar:'....'}" alt="PE">-->
+                                    <!--<span style="font-size: 24px;font-weight: bold;color: #000;display: block">PE:<span id="data-line-pe" th:utext="${info.line.edUserInfo != null?info.line.edUserInfo.userName:'请设置PE'}"></span></span>-->
+                                    <!--<span id="data-line-pe-dh" style="font-size: 24px;font-weight: bold;color: #000"-->
+                                          <!--th:utext="${info.line.edUserInfo != null?info.line.edUserInfo.loginName:''}"></span>-->
+                                <!--</a>-->
+                            <!--</div>-->
+                            <!--<div class="col-md-3" style="padding: 0px;text-align: center">-->
+                                <!--<a href="#" class="thumbnail" >-->
+                                    <!--<img id="data-line-ipqc-img"  th:src="${info.line.ipqcUserInfo != null?info.line.ipqcUserInfo.avatar:'....'}" alt="IPQC">-->
+                                    <!--<span style="font-size: 24px;font-weight: bold;color: #000;display: block">IPQC:<span id="data-line-ipqc" th:utext="${info.line.ipqcUserInfo != null?info.line.ipqcUserInfo.userName:'请设置IPQC'}"></span></span>-->
+                                    <!--<span id="data-line-ipqc-dh" style="font-size: 24px;font-weight: bold;color: #000"-->
+                                          <!--th:utext="${info.line.ipqcUserInfo != null?info.line.ipqcUserInfo.loginName:''}"></span>-->
+                                <!--</a>-->
+                            <!--</div>-->
+                            <!--<div class="col-md-3" style="padding: 0px;text-align: center">-->
+                                <!--<a href="#" class="thumbnail" >-->
+                                    <!--<img id="data-line-me-img"  th:src="${info.line.meUserInfo != null?info.line.meUserInfo.avatar:'....'}" alt="ME">-->
+                                    <!--<span style="font-size: 24px;font-weight: bold;color: #000;display: block">ME:<span id="data-line-me" th:utext="${info.line.meUserInfo != null?info.line.meUserInfo.userName:'请设置ME'}"></span></span>-->
+                                    <!--<span id="data-line-me-dh" style="font-size: 24px;font-weight: bold;color: #000"-->
+                                          <!--th:utext="${info.line.meUserInfo != null?info.line.meUserInfo.loginName:''}"></span>-->
+                                <!--</a>-->
+                            <!--</div>-->
+                            <!--<div class="col-md-3" style="padding: 0px;text-align: center">-->
+                                <!--<a href="#" class="thumbnail" >-->
+                                    <!--<img id="data-line-te-img"  th:src="${info.line.teUserInfo != null?info.line.teUserInfo.avatar:'....'}" alt="TE">-->
+                                    <!--<span style="font-size: 24px;font-weight: bold;color: #000;display: block">TE:<span id="data-line-te" th:utext="${info.line.teUserInfo != null?info.line.teUserInfo.userName:'请设置TE'}"></span></span>-->
+                                    <!--<span id="data-line-te-dh" style="font-size: 24px;font-weight: bold;color: #000"-->
+                                          <!--th:utext="${info.line.teUserInfo != null?info.line.teUserInfo.loginName:''}"></span>-->
+                                <!--</a>-->
+                            <!--</div>-->
+                        <!--</div>-->
+                        <div class="col-md-12" style="padding: 0px;text-align: center;height: 100%">
                             <div class="col-md-6" style="padding: 0px;text-align: center;height: 95%">
                                 <div class="panel panel-default" style="height: 95%;font-size: 30px;">
                                     <div class="panel-heading" style="padding:0px;">
@@ -467,43 +462,6 @@
                         }else if(item.work.operationStatus == 2){
                             $("#data-work-status").text("工单暂停中").css("color","blue");
                         }
-                    }
-                    //相关人员信息
-                    //PE
-                    $("#data-line-pe-img").attr("src","");
-                    $("#data-line-pe").text("请设置PE");
-                    $("#data-line-pe-dh").text("");
-                    if(item.line.edUserInfo){
-                        $("#data-line-pe-img").attr("src",item.line.edUserInfo.avatar);
-                        $("#data-line-pe").text(item.line.edUserInfo.userName);
-                        $("#data-line-pe-dh").text(item.line.edUserInfo.loginName);
-                    }
-                    //IPQC
-                    $("#data-line-ipqc-img").attr("src","");
-                    $("#data-line-ipqc").text("请设置IPQC");
-                    $("#data-line-ipqc-dh").text("");
-                    if(item.line.ipqcUserInfo){
-                        $("#data-line-ipqc-img").attr("src",item.line.ipqcUserInfo.avatar);
-                        $("#data-line-ipqc").text(item.line.ipqcUserInfo.userName);
-                        $("#data-line-ipqc-dh").text(item.line.ipqcUserInfo.loginName);
-                    }
-                    //ME
-                    $("#data-line-me-img").attr("src","");
-                    $("#data-line-me").text("请设置ME");
-                    $("#data-line-me-dh").text("");
-                    if(item.line.meUserInfo){
-                        $("#data-line-me-img").attr("src",item.line.meUserInfo.avatar);
-                        $("#data-line-me").text(item.line.meUserInfo.userName);
-                        $("#data-line-me-dh").text(item.line.meUserInfo.loginName);
-                    }
-                    //TE
-                    $("#data-line-te-img").attr("src","");
-                    $("#data-line-te").text("请设置TE");
-                    $("#data-line-te-dh").text("");
-                    if(item.line.teUserInfo){
-                        $("#data-line-te-img").attr("src",item.line.teUserInfo.avatar);
-                        $("#data-line-te").text(item.line.teUserInfo.userName);
-                        $("#data-line-te-dh").text(item.line.teUserInfo.loginName);
                     }
                     //当天工单
                     $("#data-work-list").children().remove();

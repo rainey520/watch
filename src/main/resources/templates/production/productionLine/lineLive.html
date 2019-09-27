@@ -685,7 +685,9 @@
             $.modal.alertWarning("请选择需要操作的工单....");
             return;
         }
-        if ($("#line-live-work-oldNum").val() >= $("#line-live-work-cumulative").val()) {
+        var newNum = parseInt($("#line-live-work-cumulative").val());
+        var oldNum = parseInt($("#line-live-work-oldNum").val());
+        if (oldNum > newNum) {
             $.modal.alertWarning("累计产量应大于上次录入数量");
             return;
         }

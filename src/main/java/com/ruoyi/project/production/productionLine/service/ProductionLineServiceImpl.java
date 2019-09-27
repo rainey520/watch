@@ -4,6 +4,7 @@ import com.ruoyi.common.constant.WorkConstants;
 import com.ruoyi.common.exception.BusinessException;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.framework.jwt.JwtUtil;
+import com.ruoyi.project.device.devCompany.domain.DevCompany;
 import com.ruoyi.project.device.devCompany.mapper.DevCompanyMapper;
 import com.ruoyi.project.device.devList.domain.DevList;
 import com.ruoyi.project.device.devList.mapper.DevListMapper;
@@ -38,7 +39,7 @@ public class ProductionLineServiceImpl implements IProductionLineService {
     private UserMapper userMapper;
 
     @Autowired
-    private DevCompanyMapper devCompanyMapper;
+    private DevCompanyMapper companyMapper;
 
     @Autowired
     private DevWorkOrderMapper devWorkOrderMapper;
@@ -98,12 +99,24 @@ public class ProductionLineServiceImpl implements IProductionLineService {
      * @return 结果
      */
     @Override
-    public int insertProductionLine(ProductionLine productionLine, HttpServletRequest request) {
-        User user = JwtUtil.getTokenUser(request);
-        if (user != null) {
-            productionLine.setCompanyId(user.getCompanyId());
-            productionLine.setCreate_by(user.getUserId().intValue());
+    public int insertProductionLine(ProductionLine productionLine) {
+        User user = JwtUtil.getUser();
+        if (user == null) {
+            throw new BusinessException("未登录或者登录超时");
         }
+        // 查看用户公司等级
+        DevCompany company = companyMapper.selectDevCompanyById(JwtUtil.getUser().getCompanyId());
+        if (company == null) {
+            throw new BusinessException("用户所在的公司不存在或者被删除");
+        }
+        if (company.getSign() == 0) {
+            List<ProductionLine> productionLines = productionLineMapper.selectAllDef0(user.getCompanyId());
+            if (StringUtils.isNotEmpty(productionLines) && productionLines.size() >= 3) {
+                throw new BusinessException("非VIP用户最多只能新增三条产线");
+            }
+        }
+        productionLine.setCompanyId(user.getCompanyId());
+        productionLine.setCreate_by(user.getUserId().intValue());
         productionLine.setCreateTime(new Date());
         return productionLineMapper.insertProductionLine(productionLine);
     }

@@ -97,4 +97,26 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         </where>
     </select>
 
+
+    <!--通过文件名查询文件是否存在-->
+    <select id="selectFileSourceByFileName" resultMap="FileSourceInfoResult">
+        <include refid="selectFileSourceInfoVo"/>
+        <where>
+            <if test="companyId != null "> and company_id = #{companyId}</if>
+            <if test="saveType != null "> and save_type = #{saveType}</if>
+            <if test="fileName != null  and fileName != '' "> and file_name = #{fileName}</if>
+        </where>
+    </select>
+
+    <!--修改文件信息-->
+    <update id="updateFileInfo" parameterType="FileSourceInfo">
+        update tab_file_source_info
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="fileName != null  ">file_name = #{fileName},</if>
+            <if test="savePath != null  ">save_path = #{savePath},</if>
+            <if test="filePath != null  ">file_path = #{filePath},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
 </mapper>

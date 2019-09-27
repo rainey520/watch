@@ -6,6 +6,7 @@ import com.ruoyi.project.device.devCompany.domain.DevCompany;
 import com.ruoyi.project.page.layout.domain.Layout;
 import com.ruoyi.project.page.pageInfoConfig.domain.PageInfoConfig;
 import com.ruoyi.project.production.devWorkOrder.domain.DevWorkOrder;
+import com.ruoyi.project.production.devWorkOrder.domain.WorkLog;
 import com.ruoyi.project.production.productionLine.domain.ProductionLine;
 import com.ruoyi.project.production.workExceptionList.domain.WorkExceptionList;
 
@@ -74,6 +75,8 @@ public class PageInfo extends BaseEntity
 
 	/** 当天所以工单 */
 	private List<DevWorkOrder> workOrder;
+	/** 拉长录入明细 */
+	private List<WorkLog> workLogList;
 	/** 正在进行工单所有异常 */
 	private List<WorkExceptionList> exs;
 	/***  正在进行工单 */
@@ -87,6 +90,14 @@ public class PageInfo extends BaseEntity
 
 	/******************* 车间单工位看板详情数据 *****************/
 	private List<PageHouse> pageHouseList;
+
+	public List<WorkLog> getWorkLogList() {
+		return workLogList;
+	}
+
+	public void setWorkLogList(List<WorkLog> workLogList) {
+		this.workLogList = workLogList;
+	}
 
 	public String getImgPath() {
 		return imgPath;

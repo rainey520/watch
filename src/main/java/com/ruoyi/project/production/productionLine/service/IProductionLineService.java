@@ -37,7 +37,7 @@ public interface IProductionLineService
      * @param productionLine 生产线信息
      * @return 结果
      */
-	public int insertProductionLine(ProductionLine productionLine,HttpServletRequest request);
+	public int insertProductionLine(ProductionLine productionLine);
 	
 	/**
      * 修改生产线

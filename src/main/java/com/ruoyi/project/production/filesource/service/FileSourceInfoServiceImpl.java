@@ -1,5 +1,6 @@
 package com.ruoyi.project.production.filesource.service;
 
+import com.ruoyi.common.constant.FileConstants;
 import com.ruoyi.common.exception.BusinessException;
 import com.ruoyi.common.support.Convert;
 import com.ruoyi.common.utils.StringUtils;
@@ -11,6 +12,7 @@ import com.ruoyi.project.device.devCompany.mapper.DevCompanyMapper;
 import com.ruoyi.project.production.filesource.domain.FileSourceInfo;
 import com.ruoyi.project.production.filesource.mapper.FileSourceInfoMapper;
 import com.ruoyi.project.system.user.domain.User;
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -61,8 +63,8 @@ public class FileSourceInfoServiceImpl implements IFileSourceInfoService {
     /**
      * 保存文件
      *
-     * @param multipartFile     文件
-     * @param saveType 保存类型
+     * @param multipartFile 文件
+     * @param saveType      保存类型
      * @return 结果
      */
     @Override
@@ -106,19 +108,19 @@ public class FileSourceInfoServiceImpl implements IFileSourceInfoService {
             }
             // 设置文件名
             String fileName = multipartFile.getOriginalFilename();
-            FileSourceInfo uniqueFile = fileSourceInfoMapper.selectFileInfoByFileName(user.getCompanyId(),fileName);
+            FileSourceInfo uniqueFile = fileSourceInfoMapper.selectFileInfoByFileName(user.getCompanyId(), fileName);
             if (StringUtils.isNotNull(uniqueFile)) {
                 throw new BusinessException("文件名称重复");
             }
             FileSourceInfo fileInfo = new FileSourceInfo();
-            File desc = FileUploadUtils.getAbsoluteFile(filePath,filePath + "/" + fileName);
+            File desc = FileUploadUtils.getAbsoluteFile(filePath, filePath + "/" + fileName);
             multipartFile.transferTo(desc);
             fileInfo.setCompanyId(user.getCompanyId());
             fileInfo.setFileType(0);
             fileInfo.setSaveType(saveType);
             fileInfo.setfSize(size);
             fileInfo.setFileName(fileName);
-            fileInfo.setFilePath(isoFileUrl + "watch" + user.getCompanyId() +"/" + fileName);
+            fileInfo.setFilePath(isoFileUrl + "watch" + user.getCompanyId() + "/" + fileName);
             fileInfo.setSavePath(filePath + "/" + fileName);
             fileInfo.setCreateTime(new Date());
             return fileSourceInfoMapper.insertFileInfo(fileInfo);
@@ -135,8 +137,7 @@ public class FileSourceInfoServiceImpl implements IFileSourceInfoService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public int deleteFileInfoByIds(String ids)
-    {
+    public int deleteFileInfoByIds(String ids) {
         User user = JwtUtil.getUser();
         if (user == null) {
             return 0;
@@ -149,26 +150,78 @@ public class FileSourceInfoServiceImpl implements IFileSourceInfoService {
         Integer[] fileIds = Convert.toIntArray(ids);
         for (Integer fileId : fileIds) {
             FileSourceInfo info = fileSourceInfoMapper.selectFileInfoById(fileId);
-            if(info != null && !StringUtils.isEmpty(info.getSavePath())){
+            if (info != null && !StringUtils.isEmpty(info.getSavePath())) {
                 fileSize = fileSize - info.getfSize();
                 //删除对应的文件
                 File file = new File(info.getSavePath());
                 file.delete();
             }
         }
-        company.setFileSize(fileSize < 0 ? 0: fileSize);
+        company.setFileSize(fileSize < 0 ? 0 : fileSize);
         companyMapper.updateDevCompany(company);
         return fileSourceInfoMapper.deleteFileSourceInfoByIds(Convert.toStrArray(ids));
     }
 
     /**
      * 查询公司轮播图信息
+     *
      * @param companyId 公司id
-     * @param saveType 保存类型
+     * @param saveType  保存类型
      * @return 结果
      */
     @Override
     public List<FileSourceInfo> selectFileByComPic(Integer companyId, Integer saveType) {
-        return fileSourceInfoMapper.selectFileListBySaveType(companyId,saveType);
+        return fileSourceInfoMapper.selectFileListBySaveType(companyId, saveType);
+    }
+
+    /**
+     * 修改保存文件名
+     *
+     * @param fileSourceInfo 文件信息
+     * @return 结果
+     */
+    @Override
+    public int saveFileName(FileSourceInfo fileSourceInfo) throws IOException {
+        User user = JwtUtil.getUser();
+        if (user == null) {
+            return 0;
+        }
+        FileSourceInfo fileInfo = fileSourceInfoMapper.selectFileInfoById(fileSourceInfo.getId());
+        if (fileInfo != null) {
+            String savePath = fileInfo.getSavePath();
+            String filePath = fileInfo.getFilePath();
+            String newFileName = fileSourceInfo.getFileName() + ".pdf";
+            File file = new File(savePath);
+            if (file.exists()) {
+                // 创建新的文件
+                File newFile = new File(savePath.substring(0, savePath.lastIndexOf("/")) + "/" + fileSourceInfo.getFileName() + ".pdf");
+                FileUtils.copyFile(file, newFile);
+                file.delete();
+                fileInfo.setFileName(newFileName);
+                fileInfo.setSavePath(savePath.substring(0, savePath.lastIndexOf("/")) + "/" + newFileName);
+                fileInfo.setFilePath(filePath.substring(0, filePath.lastIndexOf("/")) + "/" + newFileName);
+            }
+            return fileSourceInfoMapper.updateFileInfo(fileInfo);
+        }
+        return 0;
+    }
+
+    /**
+     * 校验文件名是否重复
+     *
+     * @param fileSourceInfo 文件信息
+     * @return
+     */
+    @Override
+    public String checkFileNameNameUnique(FileSourceInfo fileSourceInfo) {
+        User user = JwtUtil.getUser();
+        if (user == null) {
+            return FileConstants.FILE_NAME_NOT_UNIQUE;
+        }
+        FileSourceInfo uniqueFile = fileSourceInfoMapper.selectFileSourceByFileName(user.getCompanyId(), null, fileSourceInfo.getFileName() + ".pdf");
+        if (StringUtils.isNotNull(uniqueFile) && !uniqueFile.getId().equals(fileSourceInfo.getId())) {
+            return FileConstants.FILE_NAME_NOT_UNIQUE;
+        }
+        return FileConstants.FILE_NAME_UNIQUE;
     }
 }

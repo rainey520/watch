@@ -7,28 +7,22 @@ import com.ruoyi.common.utils.TimeUtil;
 import com.ruoyi.common.utils.spring.DevId;
 import com.ruoyi.framework.jwt.JwtUtil;
 import com.ruoyi.project.device.devCompany.mapper.DevCompanyMapper;
-import com.ruoyi.project.device.devDeviceCounts.mapper.DevDataLogMapper;
 import com.ruoyi.project.device.devIo.domain.DevIo;
 import com.ruoyi.project.device.devIo.mapper.DevIoMapper;
 import com.ruoyi.project.page.pageInfo.domain.PageInfo;
-import com.ruoyi.project.page.pageInfo.domain.PageReal;
-import com.ruoyi.project.page.pageInfo.domain.PageStandard;
 import com.ruoyi.project.page.pageInfo.domain.PageTem;
 import com.ruoyi.project.page.pageInfo.mapper.PageInfoMapper;
 import com.ruoyi.project.page.pageInfoConfig.domain.PageInfoConfig;
 import com.ruoyi.project.page.pageInfoConfig.mapper.PageInfoConfigMapper;
-import com.ruoyi.project.production.countPiece.mapper.CountPieceMapper;
 import com.ruoyi.project.production.devWorkData.domain.DevWorkData;
 import com.ruoyi.project.production.devWorkData.mapper.DevWorkDataMapper;
-import com.ruoyi.project.production.devWorkDayHour.domain.DevWorkDayHour;
-import com.ruoyi.project.production.devWorkDayHour.mapper.DevWorkDayHourMapper;
 import com.ruoyi.project.production.devWorkOrder.domain.DevWorkOrder;
+import com.ruoyi.project.production.devWorkOrder.domain.WorkLog;
 import com.ruoyi.project.production.devWorkOrder.mapper.DevWorkOrderMapper;
+import com.ruoyi.project.production.devWorkOrder.mapper.WorkLogMapper;
 import com.ruoyi.project.production.productionLine.domain.ProductionLine;
 import com.ruoyi.project.production.productionLine.mapper.ProductionLineMapper;
 import com.ruoyi.project.production.singleWork.domain.SingleWork;
-import com.ruoyi.project.production.singleWork.mapper.SingleWorkMapper;
-import com.ruoyi.project.production.singleWork.mapper.SingleWorkOrderMapper;
 import com.ruoyi.project.production.singleWork.service.ISingleWorkService;
 import com.ruoyi.project.production.workExceptionList.domain.WorkExceptionList;
 import com.ruoyi.project.production.workExceptionList.mapper.WorkExceptionListMapper;
@@ -77,9 +71,6 @@ public class PageInfoServiceImpl implements IPageInfoService {
     private DevWorkDataMapper devWorkDataMapper;
 
     @Autowired
-    private DevWorkDayHourMapper dayHourMapper;
-
-    @Autowired
     private WorkstationMapper workstationMapper;
 
     @Autowired
@@ -89,19 +80,10 @@ public class PageInfoServiceImpl implements IPageInfoService {
     private WorkExceptionListMapper workExceptionListMapper;
 
     @Autowired
-    private DevDataLogMapper devDataLogMapper;
-
-    @Autowired
     private ISingleWorkService singleWorkService;
 
     @Autowired
-    private SingleWorkMapper singleWorkMapper;
-
-    @Autowired
-    private SingleWorkOrderMapper singleWorkOrderMapper;
-
-    @Autowired
-    private CountPieceMapper countPieceMapper;
+    private WorkLogMapper workLogMapper;
 
     @Value("${page.url}")
     private String pageUrl;
@@ -137,10 +119,10 @@ public class PageInfoServiceImpl implements IPageInfoService {
     @Override
     public List<PageInfo> selectPageInfoList(PageInfo pageInfo, HttpServletRequest request) {
         User user = JwtUtil.getTokenUser(request);
-        if (user == null) return Collections.emptyList();
-        if (!User.isSys(user)) {
-            pageInfo.setCompanyId(user.getCompanyId());
+        if (user == null) {
+            return Collections.emptyList();
         }
+        pageInfo.setCompanyId(user.getCompanyId());
         List<PageInfo> infos = pageInfoMapper.selectPageInfoList(pageInfo);
         for (PageInfo info : infos) {
             info.setDevCompany(devCompanyMapper.selectDevCompanyById(info.getCompanyId()));
@@ -420,45 +402,18 @@ public class PageInfoServiceImpl implements IPageInfoService {
         if (line == null) {
             return null;
         }
-        //查询相关人员
-        if (line.getEdUser() != null && line.getEdUser() > 0) {
-            line.setEdUserInfo(userMapper.selectUserInfoById(line.getEdUser()));
-        }
-        if (line.getIpqcUser() != null && line.getIpqcUser() > 0) {
-            line.setIpqcUserInfo(userMapper.selectUserInfoById(line.getIpqcUser()));
-        }
-        if (line.getMeUser() != null && line.getMeUser() > 0) {
-            line.setMeUserInfo(userMapper.selectUserInfoById(line.getMeUser()));
-        }
-        if (line.getTeUser() != null && line.getTeUser() > 0) {
-            line.setTeUserInfo(userMapper.selectUserInfoById(line.getTeUser()));
-        }
         //设置产线
         info.setLine(line);
         //查询正在进行工单
-        DevWorkOrder devWorkOrder = devWorkOrderMapper.selectWorkByCompandAndLine(line.getCompanyId(), line.getId(), WorkConstants.SING_LINE);
-        if (devWorkOrder != null) {
-            info.setWork(devWorkOrder);
+        DevWorkOrder workOrder = devWorkOrderMapper.selectWorkByCompandAndLine(line.getCompanyId(), line.getId(), WorkConstants.SING_LINE);
+        if (workOrder != null) {
+            info.setWork(workOrder);
+            // 查询拉长录入明细列表
+            List<WorkLog> workLogList = workLogMapper.selectWorkLogListByWorkId(workOrder.getId(), line.getCompanyId());
+            info.setWorkLogList(workLogList);
             //查询正在进行工单所有异常
-            info.setExs(workExceptionListMapper.selectWorkExceAllByWorkId(devWorkOrder.getId()));
+            info.setExs(workExceptionListMapper.selectWorkExceAllByWorkId(workOrder.getId()));
         }
-        //标准产量
-        PageStandard standard = new PageStandard(devWorkOrder);
-        info.setStandard(standard);
-        //查询产线数据标识工位
-        Workstation workstation = workstationMapper.selectWorkstationSignByLineId(line.getId(), line.getCompanyId());
-        //统计该时间段的数据
-        int r = 0;
-        DevWorkDayHour hour = null;
-        if (workstation != null && devWorkOrder != null) {
-            int devId = workstation.getDevId() == null ? 0 : workstation.getDevId();
-            r = devDataLogMapper.selectLineWorkSysTemData(line.getCompanyId(), line.getId(),
-                    devWorkOrder.getId(), devId, workstation.getId(), WorkConstants.SING_LINE);
-            hour = dayHourMapper.selectInfoByCompanyLineWorkDevIo(line.getCompanyId(), line.getId(), devWorkOrder.getId(), devId, workstation.getId());
-        }
-        //实际产量
-        PageReal real = new PageReal(hour, r);
-        info.setReal(real);
         //查询当天工单
         info.setWorkOrder(devWorkOrderMapper.selectDayWorkOrder(WorkConstants.SING_LINE, line.getCompanyId(), line.getId()));
         return info;

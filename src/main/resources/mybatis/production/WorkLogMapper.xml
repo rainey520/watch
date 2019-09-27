@@ -53,4 +53,12 @@
         </trim>
     </insert>
 
+    <!--通过公司id和工单id查询录入明细列表-->
+    <select id="selectWorkLogListByWorkId" resultMap="WorkLogResult">
+        SELECT * FROM tab_work_log where company_id = #{companyId}
+        <if test="workId != null and workId != '' ">
+            and work_id = #{workId}
+        </if>
+    </select>
+
 </mapper>

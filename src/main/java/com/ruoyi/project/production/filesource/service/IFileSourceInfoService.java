@@ -44,4 +44,18 @@ public interface IFileSourceInfoService
 	 * @return 结果
 	 */
 	List<FileSourceInfo> selectFileByComPic(Integer companyId, Integer saveType);
+
+	/**
+	 * 修改保存文件名
+	 * @param fileSourceInfo 文件信息
+	 * @return 结果
+	 */
+	int saveFileName(FileSourceInfo fileSourceInfo) throws IOException;
+
+	/**
+	 * 校验文件名是否重复
+	 * @param fileSourceInfo
+	 * @return 结果
+	 */
+	String checkFileNameNameUnique(FileSourceInfo fileSourceInfo);
 }

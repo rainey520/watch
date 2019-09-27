@@ -8,12 +8,11 @@ import com.ruoyi.project.production.filesource.domain.FileSourceInfo;
 import com.ruoyi.project.production.filesource.service.IFileSourceInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -25,6 +24,8 @@ import java.util.List;
 @Controller
 @RequestMapping("/iso/fileSource")
 public class FileSourceInfoController extends BaseController {
+
+    private String prefix = "production/fileSourceInfo";
 
     @Autowired
     private IFileSourceInfoService fileSourceService;
@@ -55,6 +56,39 @@ public class FileSourceInfoController extends BaseController {
             return error("上传失败");
         }
     }
+
+    /**
+     * 修改文件名
+     */
+    @GetMapping("/editFileName")
+    public String editFileName(Integer id, String fileName, ModelMap map){
+        map.put("id",id);
+        map.put("fileName",fileName.substring(0,fileName.lastIndexOf(".")));
+        return prefix + "/editFileName";
+    }
+
+    /**
+     * 修改保存文件名
+     */
+    @PostMapping("/saveFileName")
+    @ResponseBody
+    public AjaxResult saveFileName(FileSourceInfo fileSourceInfo){
+        try {
+            return toAjax(fileSourceService.saveFileName(fileSourceInfo));
+        } catch (IOException e) {
+            return error();
+        }
+    }
+
+    /**
+     * 检验文件名是否重复
+     */
+    @PostMapping("/checkFileNameNameUnique")
+    @ResponseBody
+    public String checkFileNameNameUnique(FileSourceInfo  fileSourceInfo) {
+        return fileSourceService.checkFileNameNameUnique(fileSourceInfo);
+    }
+
 
     /**
      * 删除文件

@@ -35,7 +35,6 @@ public interface PageInfoConfigMapper
      * @param pageInfoConfig 页面配置信息
      * @return 结果
      */
-//	@DataSource(DataSourceType.SLAVE)
 	public int insertPageInfoConfig(PageInfoConfig pageInfoConfig);
 	
 	/**

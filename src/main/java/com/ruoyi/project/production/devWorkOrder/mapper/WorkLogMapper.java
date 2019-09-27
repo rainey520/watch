@@ -1,6 +1,9 @@
 package com.ruoyi.project.production.devWorkOrder.mapper;
 
 import com.ruoyi.project.production.devWorkOrder.domain.WorkLog;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * 拉长录入 数据层
@@ -17,4 +20,12 @@ public interface WorkLogMapper {
      * @return 结果
      */
     public int insertWorkLog(WorkLog workLog);
+
+    /**
+     * 通过工单id公司id查询录入明细列表
+     * @param workId 工单id
+     * @param companyId 公司id
+     * @return 结果
+     */
+    List<WorkLog> selectWorkLogListByWorkId(@Param("workId") Integer workId,@Param("companyId") Integer companyId);
 }
