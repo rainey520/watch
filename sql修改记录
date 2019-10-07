@@ -18,5 +18,10 @@ CREATE TABLE `mes`.`tab_work_log` (
 ALTER TABLE `mes`.`tab_work_log`
 ADD COLUMN `total_output` INT NULL DEFAULT 0 COMMENT '总共生产产量' AFTER `input_time`;
 
+# 添加看板平板登录账号密码
+ALTER TABLE `mes`.`dev_company`
+ADD COLUMN `login_number` VARCHAR(125) NULL COMMENT '登录账号' AFTER `file_size`,
+ADD COLUMN `login_password` INT NULL DEFAULT 123456 COMMENT '登录密码' AFTER `login_number`;
+
 
 

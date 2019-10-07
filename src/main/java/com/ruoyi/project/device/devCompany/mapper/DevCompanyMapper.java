@@ -73,4 +73,11 @@ public interface DevCompanyMapper
 	 * @return
 	 */
 	List<DevCompany> selectComType0Company();
+
+	/**
+	 * 通过看板账号查询公司信息
+	 * @param loginNumber 看板账号
+	 * @return 结果
+	 */
+	DevCompany selectCompanyByLoginNumber(String loginNumber);
 }

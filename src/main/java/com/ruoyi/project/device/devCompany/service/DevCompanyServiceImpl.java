@@ -74,6 +74,9 @@ public class DevCompanyServiceImpl implements IDevCompanyService {
      */
     @Override
     public int updateDevCompany(DevCompany devCompany, HttpServletRequest request) {
+        if (StringUtils.isNotEmpty(devCompany.getLoginNumber())){
+            devCompany.setLoginNumber(devCompany.getLoginNumber().toUpperCase());
+        }
         return devCompanyMapper.updateDevCompany(devCompany);
     }
 
@@ -101,13 +104,16 @@ public class DevCompanyServiceImpl implements IDevCompanyService {
     /**
      * 校验公司名称是否存在
      *
-     * @param comName 公司信息
+     * @param company 公司信息
      * @return 结果
      */
     @Override
-    public String checkComNameUnique(String comName) {
-        DevCompany companyInfo = devCompanyMapper.selectDevCompanyByComName(comName);
-        if (!StringUtils.isNull(companyInfo) ) { // 数据库存在记录
+    public String checkComNameUnique(DevCompany company) {
+        if (StringUtils.isEmpty(company.getComName())) {
+            return CompanyConstants.COM_NAME_NOT_UNIQUE;
+        }
+        DevCompany companyInfo = devCompanyMapper.selectDevCompanyByComName(company.getComName());
+        if (StringUtils.isNotNull(companyInfo) && !companyInfo.getCompanyId().equals(company.getCompanyId())) {
             return CompanyConstants.COM_NAME_NOT_UNIQUE;
         }
         return CompanyConstants.COM_NAME_UNIQUE;
@@ -133,6 +139,7 @@ public class DevCompanyServiceImpl implements IDevCompanyService {
 
     /**
      * 查询所以注册公司
+     *
      * @return
      */
     @Override
@@ -142,16 +149,35 @@ public class DevCompanyServiceImpl implements IDevCompanyService {
 
     /**
      * 升级为VIP
+     *
      * @param id 公司id
      * @return
      */
     @Override
     public int toVip(int id) {
         DevCompany company = devCompanyMapper.selectDevCompanyById(id);
-        if(company == null)
-        return 0;
+        if (company == null)
+            return 0;
         company.setSign(1);
         devCompanyMapper.updateDevCompany(company);
         return 1;
+    }
+
+    /**
+     * 校验公司看板账号唯一性
+     *
+     * @param company 公司信息
+     * @return 结果
+     */
+    @Override
+    public String checkLoginNumberUnique(DevCompany company) {
+        if (StringUtils.isEmpty(company.getLoginNumber())) {
+            return CompanyConstants.COM_LOGIN_NUM_NOT_UNIQUE;
+        }
+        DevCompany companyInfo = devCompanyMapper.selectCompanyByLoginNumber(company.getLoginNumber().toUpperCase());
+        if (StringUtils.isNotNull(companyInfo) && !companyInfo.getCompanyId().equals(company.getCompanyId())) {
+            return CompanyConstants.COM_LOGIN_NUM_NOT_UNIQUE;
+        }
+        return CompanyConstants.COM_LOGIN_NUM_UNIQUE;
     }
 }

@@ -208,8 +208,18 @@ public class DevCompanyController extends BaseController {
      */
     @PostMapping("/checkComNameUnique")
     @ResponseBody
-    public String checkComNameUnique(String comName) {
-        return devCompanyService.checkComNameUnique(comName);
+    public String checkComNameUnique(DevCompany company) {
+        return devCompanyService.checkComNameUnique(company);
+    }
+
+    /**
+     * 校验公司看板账号是否唯一
+     *
+     */
+    @PostMapping("/checkLoginNumberUnique")
+    @ResponseBody
+    public String checkLoginNumberUnique(DevCompany company) {
+        return devCompanyService.checkLoginNumberUnique(company);
     }
 
     /**

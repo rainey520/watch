@@ -72,7 +72,7 @@ public interface IDevCompanyService
 	 * @param comName 公司信息
 	 * @return 结果
 	 */
-	String checkComNameUnique(String comName);
+	String checkComNameUnique(DevCompany company);
 
 	/**
 	 * 查询公司轮播图片
@@ -93,4 +93,11 @@ public interface IDevCompanyService
 	 * @return
 	 */
 	int toVip(int id);
+
+	/**
+	 * 校验公司看板账号唯一性
+	 * @param company 公司信息
+	 * @return 结果
+	 */
+	String checkLoginNumberUnique(DevCompany company);
 }

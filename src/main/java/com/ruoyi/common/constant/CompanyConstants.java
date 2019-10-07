@@ -13,4 +13,8 @@ public class CompanyConstants {
     /** 公司名称是否唯一的返回结果码 */
     public final static String COM_NAME_UNIQUE = "0"; // 唯一
     public final static String COM_NAME_NOT_UNIQUE = "1"; // 不唯一，数据库存在记录
+
+    /** 公司看板账号是否唯一的返回结果码 */
+    public final static String COM_LOGIN_NUM_UNIQUE = "0"; // 唯一
+    public final static String COM_LOGIN_NUM_NOT_UNIQUE = "1"; // 不唯一，数据库存在记录
 }
