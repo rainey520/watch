@@ -239,8 +239,16 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
     @Transactional(rollbackFor = Exception.class)
     public int updateDevWorkOrder(DevWorkOrder devWorkOrder) {
         User u = JwtUtil.getTokenUser(ServletUtils.getRequest());
+        if (u == null) {
+            throw new BusinessException("用户未登录或登录超时");
+        }
         DevWorkOrder workOrder = devWorkOrderMapper.selectDevWorkOrderById(devWorkOrder.getId());
         Long userId = u.getUserId();
+        // 查询公司信息
+        DevCompany company = companyMapper.selectDevCompanyById(u.getCompanyId());
+        if (company == null) {
+            throw new BusinessException("公司不存在或被删除");
+        }
         if (workOrder == null) {
             throw new BusinessException("工单不存在或已经删除");
         }
@@ -262,7 +270,8 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
         if (one != userId.intValue() && tow != userId.intValue() && !u.getLoginName().equals("admin")) {
             throw new BusinessException("不是工单负责人");
         }
-
+        // 消息推送
+        JPushMsg(company);
         if (StringUtils.isNotNull(devWorkOrder.getCumulativeNumber()) && devWorkOrder.getCumulativeNumber() > devWorkOrder.getOldInputNum()) {
             // 新增拉长操作记录
             WorkLog workLog = new WorkLog();
@@ -274,16 +283,18 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
             workLog.setLineId(line.getId());
             workLog.setLineName(line.getLineName());
             // 标准产量
-            float v = (TimeUtil.getDateDel(workOrder.getSignTime(), new Date()) + workOrder.getSignHuor()) * workOrder.getProductStandardHour();
-            int round = Math.round(v);
-            workLog.setBzOutput(round);
+            float totalHour = workOrder.getSignHuor();
+            //计算标准产量
+            if (workOrder.getOperationStatus().equals(WorkConstants.OPERATION_STATUS_STARTING)) {
+                totalHour += TimeUtil.getDateDel(workOrder.getSignTime(), new Date());
+            }
+            workLog.setBzOutput((int)(totalHour * workOrder.getProductStandardHour()));
             workLog.setSjOutput(devWorkOrder.getCumulativeNumber() - devWorkOrder.getOldInputNum());
             workLog.setTotalOutput(devWorkOrder.getCumulativeNumber());
             workLog.setInputData(new Date());
             workLog.setInputTime(new Date());
             workLogMapper.insertWorkLog(workLog);
         }
-
 
         return devWorkOrderMapper.updateDevWorkOrder(devWorkOrder);
     }
@@ -1344,8 +1355,9 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
     @Value("${jpush.appkey}")
     private  String APP_KEY;
 
-    private void JPushMsg(){
-        List<String> alias = null;
+    private void JPushMsg(DevCompany company){
+        String alias = company.getLoginNumber();
+        // List<String> alias = null;
         JSONObject data = new JSONObject();
         data.put("msg","1");
         //进行消息推送

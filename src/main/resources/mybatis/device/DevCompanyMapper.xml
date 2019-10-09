@@ -123,4 +123,10 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <include refid="selectDevCompanyVo"/>
         where login_number = #{loginNumber} limit 1;
     </select>
+
+    <!--通过登录账号密码登录验证-->
+    <select id="selectCompanyByLoginInfo" resultMap="DevCompanyResult">
+        <include refid="selectDevCompanyVo"/>
+        where login_number = #{loginNumber} and login_password = #{loginPassword} limit 1;
+    </select>
 </mapper>

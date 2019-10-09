@@ -39,6 +39,7 @@ import org.springframework.util.StringUtils;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.util.*;
 
 /**
@@ -409,7 +410,17 @@ public class PageInfoServiceImpl implements IPageInfoService {
         if (workOrder != null) {
             info.setWork(workOrder);
             // 查询拉长录入明细列表
+            DecimalFormat df = new DecimalFormat("0.00");
+            String rateNum;
             List<WorkLog> workLogList = workLogMapper.selectWorkLogListByWorkId(workOrder.getId(), line.getCompanyId());
+            for (WorkLog workLog : workLogList) {
+                if (workLog.getBzOutput() != 0) {
+                    rateNum = df.format(((float)workLog.getTotalOutput()/workLog.getBzOutput())*100);
+                } else {
+                    rateNum = "0.00";
+                }
+                workLog.setRateNum(rateNum);
+            }
             info.setWorkLogList(workLogList);
             //查询正在进行工单所有异常
             info.setExs(workExceptionListMapper.selectWorkExceAllByWorkId(workOrder.getId()));

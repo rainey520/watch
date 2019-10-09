@@ -1,5 +1,6 @@
 package com.ruoyi.project.production.devWorkOrder.mapper;
 
+import com.ruoyi.project.app.domain.WatchInfo;
 import com.ruoyi.project.production.devWorkOrder.domain.WorkLog;
 import org.apache.ibatis.annotations.Param;
 
@@ -28,4 +29,11 @@ public interface WorkLogMapper {
      * @return 结果
      */
     List<WorkLog> selectWorkLogListByWorkId(@Param("workId") Integer workId,@Param("companyId") Integer companyId);
+
+    /**
+     * 查询拉长录入明细
+     * @param watchInfo 看板信息
+     * @return 结果
+     */
+    List<WorkLog> selectWorkLogListByWatchInfo(WatchInfo watchInfo);
 }

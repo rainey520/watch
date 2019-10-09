@@ -28,8 +28,18 @@ public class WorkLog extends BaseEntity {
     private Date inputTime;
     /** 总共生产数量 */
     private Integer totalOutput;
+    /** 达成率 */
+    private String rateNum;
     /** 工单号 */
     private String workCode;
+
+    public String getRateNum() {
+        return rateNum;
+    }
+
+    public void setRateNum(String rateNum) {
+        this.rateNum = rateNum;
+    }
 
     public Integer getId() {
         return id;

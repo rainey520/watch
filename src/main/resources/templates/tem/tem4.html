@@ -134,14 +134,13 @@
                             <th style="text-align: center">达成率(%)</th>
                         </tr>
                         </thead>
-                        <tbody id="add-xq-table-body" style="font-size: 28px;"th:if="${not #lists.isEmpty(info.workLogList)}"
-                               th:each="item:${info.workLogList}">
-                            <tr style="font-size: 30px;text-align: center">
+                        <tbody id="add-xq-table-body" style="font-size: 28px;">
+                            <tr th:if="${not #lists.isEmpty(info.workLogList)}"
+                                    th:each="item:${info.workLogList}" style="font-size: 25px;text-align: center">
                                 <td th:utext="${#dates.format(item.inputTime,'yyyy-MM-dd HH:ss')}"></td>
                                 <td th:utext="${item.bzOutput}"></td>
-                                <td th:utext="${item.sjOutput}"></td>
-                                <!--<td th:utext="${#numbers.formatDecimal((item.sjOutput/item.bzOutput)*100,2,1)}"></td>-->
-                                <td th:utext="${item.bzOutput}/${item.sjOutput}"></td>
+                                <td th:utext="${item.totalOutput}"></td>
+                                <td th:utext="${item.rateNum}"></td>
                             </tr>
                         </tbody>
                     </table>
@@ -260,7 +259,55 @@
         var code = [[${code}]];
         if (code) {
             $.post("/t/hz", {"code": code}, function (res) {
-
+                if (res.code == 0 && res.data) {
+                    var item = res.data;
+                    //修改看板名称
+                    if(item.pageName){
+                        $("#hzkb-name").text(item.pageName)
+                    }
+                    //产线名称
+                    $("#data-line-name").text(item.line.lineName);
+                    if(item.line.manual == 1){
+                        $("#data-line-name").css("background-color",'yellow');
+                    }else{
+                        $("#data-line-name").css("background-color",'');
+                    }
+                    //责任人
+                    $("#data-line-zrr").text(item.line.deviceLiableName);
+                    //工单信息
+                    $("#data-work-code").text("-------------");
+                    $("#data-work-number").text(0);
+                    $("#data-work-stamdar-number").text(0);
+                    $("#data-work-product").text("-------------");
+                    $("#data-work-input-num").text(0);
+                    $("#data-work-status").text("当前无进行工单").css("color","red");
+                    if(item.work){
+                        $("#data-work-code").text(item.work.workorderNumber);
+                        $("#data-work-number").text(item.work.productNumber);
+                        $("#data-work-stamdar-number").text(item.work.productStandardHour);
+                        $("#data-work-product").text(item.work.productCode);
+                        $("#data-work-input-num").text(item.work.putIntoNumber == null?0:item.work.putIntoNumber);
+                        if(item.work.operationStatus == 1){
+                            $("#data-work-status").text("工单进行中").css("color","green");
+                        }else if(item.work.operationStatus == 2){
+                            $("#data-work-status").text("工单暂停中").css("color","blue");
+                        }
+                    }
+                    $("#add-xq-table-body").find("tr").remove();
+                    if (item.workLogList && item.workLogList.length > 0) {
+                        // var workSize = item.workLogList.length;
+                        var workItem = '';
+                        for (var i = 0;i < 9; i++){
+                            var workData = item.workLogList[i];
+                            workItem += '' +
+                                '<tr style="font-size: 25px;text-align: center"><td>'+ workData.inputTime+'</td>' +
+                                '<td>'+ workData.bzOutput +'</td>' +
+                                '<td>'+ workData.totalOutput +'</td>' +
+                                '<td>'+workData.rateNum+'</td></tr>'
+                        }
+                        $("#add-xq-table-body").append(workItem);
+                    }
+                }
             })
         }
     }

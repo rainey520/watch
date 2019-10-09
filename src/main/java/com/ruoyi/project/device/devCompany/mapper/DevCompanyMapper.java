@@ -1,6 +1,7 @@
 package com.ruoyi.project.device.devCompany.mapper;
 
 import com.ruoyi.project.device.devCompany.domain.DevCompany;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;	
 
@@ -80,4 +81,12 @@ public interface DevCompanyMapper
 	 * @return 结果
 	 */
 	DevCompany selectCompanyByLoginNumber(String loginNumber);
+
+	/**
+	 * 通过看板账号密码登录
+	 * @param loginNumber 登录账号
+	 * @param loginPassword 登录密码
+	 * @return 结果
+	 */
+	DevCompany selectCompanyByLoginInfo(@Param("loginNumber") String loginNumber,@Param("loginPassword") String loginPassword);
 }

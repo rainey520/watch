@@ -18,4 +18,11 @@ public interface IWatchService {
      * @return 结果
      */
     Map<String, Object> selectWatchInfo(WatchInfo watchInfo);
+
+    /**
+     * 看板登录验证
+     * @param watchInfo 登录信息
+     * @return 结果
+     */
+    Map<String, Object> watchLogin(WatchInfo watchInfo);
 }

@@ -3,11 +3,14 @@ package com.ruoyi.project.app.service.impl;
 import com.ruoyi.common.constant.WorkConstants;
 import com.ruoyi.common.support.Convert;
 import com.ruoyi.common.utils.StringUtils;
+import com.ruoyi.common.utils.TimeUtil;
 import com.ruoyi.framework.jwt.JwtUtil;
 import com.ruoyi.project.app.domain.WatchDetail;
 import com.ruoyi.project.app.domain.WatchInfo;
-import com.ruoyi.project.app.domain.WatchTem;
 import com.ruoyi.project.app.service.IWatchService;
+import com.ruoyi.project.device.devCompany.domain.DevCompany;
+import com.ruoyi.project.device.devCompany.mapper.DevCompanyMapper;
+import com.ruoyi.project.page.pageInfo.domain.PageTem;
 import com.ruoyi.project.production.devWorkOrder.domain.DevWorkOrder;
 import com.ruoyi.project.production.devWorkOrder.domain.WorkLog;
 import com.ruoyi.project.production.devWorkOrder.mapper.DevWorkOrderMapper;
@@ -17,22 +20,29 @@ import com.ruoyi.project.production.productionLine.mapper.ProductionLineMapper;
 import com.ruoyi.project.production.workExceptionList.domain.WorkExceptionList;
 import com.ruoyi.project.production.workExceptionList.mapper.WorkExceptionListMapper;
 import com.ruoyi.project.system.user.domain.User;
+import com.ruoyi.project.system.user.mapper.UserMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.math.BigDecimal;
+import java.util.*;
 
 /**
  * 看板数据拉取接口实现
+ *
  * @Author: Rainey
  * @Date: 2019/9/27 9:35
  * @Version: 1.0
  **/
 @Service
 public class WatchServiceImpl implements IWatchService {
+
+    /**
+     * logger
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(WatchServiceImpl.class);
 
     @Autowired
     private ProductionLineMapper lineMapper;
@@ -46,90 +56,184 @@ public class WatchServiceImpl implements IWatchService {
     @Autowired
     private WorkExceptionListMapper workExcMapper;
 
+    @Autowired
+    private DevCompanyMapper companyMapper;
+
+    @Autowired
+    private UserMapper userMapper;
+
     /**
      * 拉取看板信息
+     *
      * @param watchInfo 看板信息
      * @return 结果
      */
     @Override
     public Map<String, Object> selectWatchInfo(WatchInfo watchInfo) {
-        Map<String,Object> map = new HashMap<>(16);
-        User user = JwtUtil.getUser();
-        if (user == null) {
-            map.put("msg","用户未登录或者登录超时");
-            map.put("code",1);
-            return map;
-        }
-        if (watchInfo == null) {
-            map.put("msg","请求失败");
-            map.put("code",1);
-            return map;
-        }
-        WatchInfo info = new WatchInfo();
-        // 查看看板明细
-        if (StringUtils.isNotNull(watchInfo.getLineId())) {
-            WatchDetail watchDetail = new WatchDetail();
-            // 查看产线信息
-            ProductionLine line = lineMapper.selectProductionLineById(watchInfo.getLineId());
-            if (line == null) {
-                map.put("msg","产线不存在或被删除");
-                map.put("code",1);
+        Map<String, Object> map = new HashMap<>(16);
+        Integer companyId = null;
+        try {
+            if (watchInfo == null) {
+                map.put("msg", "请求失败");
+                map.put("code", 1);
                 return map;
             }
-            watchDetail.setLine(line);
-            // 查询正在该产线正在进行的工单信息
-            DevWorkOrder workOrder = workOrderMapper.selectWorkByCompandAndLine(user.getCompanyId(), watchInfo.getLineId(), WorkConstants.SING_LINE);
-            // 查询当天所有的工单信息
-            watchDetail.setTodayWork(workOrderMapper.selectDayWorkOrder(WorkConstants.SING_LINE, user.getCompanyId(), line.getId()));
-            if (workOrder == null) {
-                info.setWatchDetail(watchDetail);
-                map.put("msg","没有正在进行的工单");
-                map.put("data",info);
-                map.put("code",0);
+            if (watchInfo.getCompanyId() != null) {
+                companyId = watchInfo.getCompanyId();
+            } else {
+                User user = JwtUtil.getUser();
+                companyId = user.getCompanyId();
+            }
+            if (companyId == null) {
+                map.put("msg", "公司不存在或被删除");
+                map.put("code", 1);
                 return map;
             }
-            watchDetail.setWorkOrder(workOrder);
-            // 查看工单异常信息
-            List<WorkExceptionList> excList = workExcMapper.selectWorkExceAllByWorkId(workOrder.getId());
-            watchDetail.setExcList(excList);
-            // 查看拉长输入明细
-            List<WorkLog> workLogList = workLogMapper.selectWorkLogListByWorkId(workOrder.getId(),user.getCompanyId());
-            watchDetail.setWorkLogList(workLogList);
-            info.setWatchDetail(watchDetail);
-            map.put("msg","请求成功");
-            map.put("data",info);
-            map.put("code",0);
-            return map;
-
-            // 查看汇总信息
-        } else if (StringUtils.isNotEmpty(watchInfo.getLineIds())){
-            List<WatchTem> watchList = new ArrayList<>();
-            WatchTem watchTem= null;
-            Integer[] lineIds = Convert.toIntArray(watchInfo.getLineIds());
-            ProductionLine line = null;
-            DevWorkOrder workOrder = null;
-            for (Integer lineId : lineIds) {
-                line = lineMapper.selectProductionLineById(lineId);
-                if (line != null) {
-                    watchTem = new WatchTem();
-                    // 设置产线信息
-                    watchTem.setLine(line);
-                    // 查看该产线正在进行的工单
-                    workOrder = workOrderMapper.selectWorkByCompandAndLine(user.getCompanyId(), line.getId(), WorkConstants.SING_LINE);
-                    if (workOrder != null) {
-                        watchTem.setWorkOrder(workOrder);
-                    }
-                    watchList.add(watchTem);
+            // 公司信息
+            DevCompany company = companyMapper.selectDevCompanyById(companyId);
+            WatchInfo info = new WatchInfo();
+            info.setCompany(company);
+            // 查看看板明细
+            if (StringUtils.isNotNull(watchInfo.getLineId())) {
+                WatchDetail watchDetail = new WatchDetail();
+                // 查看产线信息
+                ProductionLine line = lineMapper.selectProductionLineById(watchInfo.getLineId());
+                if (line == null) {
+                    map.put("msg", "产线不存在或被删除");
+                    map.put("code", 1);
+                    return map;
                 }
+                watchDetail.setLine(line);
+                // 查询正在该产线正在进行的工单信息
+                DevWorkOrder workOrder = workOrderMapper.selectWorkByCompandAndLine(companyId, watchInfo.getLineId(), WorkConstants.SING_LINE);
+                // 查询当天所有的工单信息
+                watchDetail.setTodayWork(workOrderMapper.selectDayWorkOrder(WorkConstants.SING_LINE, companyId, line.getId()));
+                if (workOrder == null) {
+                    info.setWatchDetail(watchDetail);
+                    map.put("msg", "没有正在进行的工单");
+                    map.put("data", info);
+                    map.put("code", 0);
+                    return map;
+                }
+                watchDetail.setWorkOrder(workOrder);
+                // 查看工单异常信息
+                List<WorkExceptionList> excList = workExcMapper.selectWorkExceAllByWorkId(workOrder.getId());
+                watchDetail.setExcList(excList);
+                // 查看拉长输入明细
+                watchInfo.setWorkId(workOrder.getId());
+                watchInfo.appStartPage();
+                List<WorkLog> workLogList = workLogMapper.selectWorkLogListByWatchInfo(watchInfo);
+                watchDetail.setWorkLogList(workLogList);
+                info.setWatchDetail(watchDetail);
+                map.put("msg", "请求成功");
+                map.put("data", info);
+                map.put("code", 0);
+                return map;
+
+                // 查看汇总信息
+            } else if (StringUtils.isNotEmpty(watchInfo.getLineIds())) {
+                List<PageTem> tems = new ArrayList<>();
+                PageTem tem = null;
+                ProductionLine line = null;
+                DevWorkOrder order = null;
+                WorkExceptionList workExceptionList = null;
+                Integer[] lineIds = Convert.toIntArray(watchInfo.getLineIds());
+                for (Integer lineId : lineIds) {
+                    line = lineMapper.selectProductionLineById(lineId);
+                    if (line != null) {
+                        tem = new PageTem();
+                        tem.setLineName(line.getLineName());
+                        tem.setInputNum(0);
+                        tem.setStandardNum(0);
+                        tem.setOutputNum(0);
+                        tem.setAchievementRate(0.00F);
+                        tem.setWorkCode("-");
+                        tem.setProductCode("-");
+                        tem.setWorkStatus(0);
+                        tem.setWorkNum(0);
+                        tem.setLineManual(line.getManual());
+                        tem.setEx(0);
+                        //查询责任人
+                        User user = userMapper.selectUserInfoById(line.getDeviceLiable());
+                        if (user != null) {
+                            tem.setPersonLiable(user.getUserName());
+                        }
+                        //查询各个产线正在进行的工单
+                        order = workOrderMapper.selectWorkByCompandAndLine(line.getCompanyId(), line.getId(), WorkConstants.SING_LINE);
+                        if (order != null) {
+                            tem.setWorkCode(order.getWorkorderNumber());
+                            tem.setProductCode(order.getProductCode());
+                            tem.setWorkNum(order.getProductNumber());
+                            tem.setWorkStatus(order.getOperationStatus());
+                            tem.setNumber(order.getPeopleNumber() == null ? 0 : order.getPeopleNumber());
+                            tem.setInputNum(order.getPutIntoNumber() == null ? 0 : order.getPutIntoNumber());
+                            tem.setOutputNum(order.getCumulativeNumber() == null ? 0 : order.getCumulativeNumber());
+                            //查询对应工单是否出现未处理异常情况
+                            workExceptionList = workExcMapper.selectWorkExceNotByWorkId(order.getId());
+                            if (workExceptionList != null) {
+                                tem.setEx(1);
+                            }
+                            float totalHour = order.getSignHuor();
+                            //计算标准产量
+                            if (order.getOperationStatus().equals(WorkConstants.OPERATION_STATUS_STARTING)) {
+                                totalHour += TimeUtil.getDateDel(order.getSignTime(), new Date());
+                            }
+                            tem.setStandardNum((int) (totalHour * order.getProductStandardHour()));
+                            //计数达成率
+                            if (tem.getOutputNum() > 0 && tem.getStandardNum() > 0) {
+                                tem.setAchievementRate(new BigDecimal(((float) tem.getOutputNum() / (float) tem.getStandardNum()) * 100).setScale(2, BigDecimal.ROUND_HALF_UP).floatValue());
+                            }
+                        }
+                        tems.add(tem);
+                    }
+                }
+                info.setWatchList(tems);
+                map.put("msg", "请求成功");
+                map.put("data", info);
+                map.put("code", 0);
+                return map;
             }
-            info.setWatchList(watchList);
-            map.put("msg","请求成功");
-            map.put("data",info);
-            map.put("code",0);
-            return map;
+        } catch (Exception e) {
+            LOGGER.error("app端拉取看板信息出现异常：" + e.getMessage());
         }
-        map.put("msg","请求失败");
-        map.put("code",1);
+        map.put("msg", "请求失败");
+        map.put("code", 1);
+        return map;
+    }
+
+    /**
+     * 看板登录
+     *
+     * @param watchInfo 登录信息
+     * @return 结果
+     */
+    @Override
+    public Map<String, Object> watchLogin(WatchInfo watchInfo) {
+        Map<String, Object> map = new HashMap<>(16);
+        try {
+            if (watchInfo != null && StringUtils.isNotEmpty(watchInfo.getLoginNumber()) && watchInfo.getLoginPassword() != null) {
+                DevCompany company = companyMapper.selectCompanyByLoginInfo(watchInfo.getLoginNumber().toUpperCase(), watchInfo.getLoginPassword());
+                if (company == null) {
+                    map.put("code", 0);
+                    map.put("msg", "登录账号或密码错误");
+                    return map;
+                }
+                WatchInfo watch = new WatchInfo();
+                watch.setLineList(lineMapper.selectAllDef0(company.getCompanyId()));
+                watch.setCompanyId(company.getCompanyId());
+                map.put("code", 1);
+                map.put("msg", "登录成功");
+                map.put("data", watch);
+                return map;
+            }
+            map.put("code", 0);
+            map.put("msg", "登录失败");
+            return map;
+        } catch (Exception e) {
+            LOGGER.error("app端登录看板出现异常：" + e.getMessage());
+        }
+        map.put("code", 0);
+        map.put("msg", "操作失败");
         return map;
     }
 }
