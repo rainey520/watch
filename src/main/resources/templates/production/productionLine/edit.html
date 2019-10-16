@@ -114,6 +114,12 @@
 		
 		function submitHandler() {
 	        if ($.validate.form()) {
+				var deviceLiable = $("#deviceLiable").val();
+				var deviceLiableTow = $("#deviceLiableTow").val();
+				if ($.common.isEmpty(deviceLiable) || $.common.isEmpty(deviceLiableTow)) {
+					$.modal.alertWarning("责任人必填");
+					return;
+				}
 	            $.operate.save(prefix + "/edit", $('#form-productionLine-edit').serialize());
 	        }
 	    }

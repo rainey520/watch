@@ -51,6 +51,7 @@ import com.ruoyi.project.quality.mesBatchRule.domain.MesBatchRule;
 import com.ruoyi.project.quality.mesBatchRule.domain.MesBatchRuleDetail;
 import com.ruoyi.project.quality.mesBatchRule.mapper.MesBatchRuleDetailMapper;
 import com.ruoyi.project.quality.mesBatchRule.mapper.MesBatchRuleMapper;
+import com.ruoyi.project.system.config.mapper.JpushInfoMapper;
 import com.ruoyi.project.system.user.domain.User;
 import com.ruoyi.project.system.user.mapper.UserMapper;
 import org.apache.commons.io.FileUtils;
@@ -357,6 +358,11 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
         if (user == null) {
             throw new BusinessException(UserConstants.NOT_LOGIN);
         }
+        // 查询公司信息
+        DevCompany company = companyMapper.selectDevCompanyById(user.getCompanyId());
+        if (company == null) {
+            throw new BusinessException("公司信息不存在或被删除");
+        }
         DevWorkOrder devWorkOrder = devWorkOrderMapper.selectDevWorkOrderById(id);
 
         ProductionLine productionLine = productionLineMapper.selectProductionLineById(devWorkOrder.getLineId());
@@ -401,6 +407,7 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
                 //标记用时
                 devWorkOrder.setSignHuor(0F);
             }
+            JPushMsg(company);
             // 修改工单的状态为进行中
             devWorkOrder.setWorkorderStatus(WorkConstants.WORK_STATUS_STARTING);
             // 修改工单的操作状态为正在进行，页面显示暂停按钮
@@ -434,6 +441,10 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
         if (user == null) {
             throw new BusinessException(UserConstants.NOT_LOGIN);
         }
+        DevCompany company = companyMapper.selectDevCompanyById(user.getCompanyId());
+        if (company == null) {
+            throw new BusinessException("公司信息不存在或被删除");
+        }
         Long userId = user.getUserId();
         DevWorkOrder devWorkOrder = devWorkOrderMapper.selectDevWorkOrderById(id);
         ProductionLine productionLine = productionLineMapper.selectProductionLineById(devWorkOrder.getLineId());
@@ -443,6 +454,7 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
                 !user.getLoginName().equals("admin")) {
             throw new BusinessException("不是工单负责人");
         }
+        JPushMsg(company);
         updateWork(user, devWorkOrder);
         return devWorkOrderMapper.updateDevWorkOrder(devWorkOrder);
     }
@@ -1355,9 +1367,11 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
     @Value("${jpush.appkey}")
     private  String APP_KEY;
 
+    @Autowired
+    private JpushInfoMapper jpushInfoMapper;
+
     private void JPushMsg(DevCompany company){
-        String alias = company.getLoginNumber();
-        // List<String> alias = null;
+        List<String> alias = jpushInfoMapper.selectJPushInfoList(company.getLoginNumber());
         JSONObject data = new JSONObject();
         data.put("msg","1");
         //进行消息推送

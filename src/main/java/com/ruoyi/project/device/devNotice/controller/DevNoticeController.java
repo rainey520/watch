@@ -1,13 +1,16 @@
 package com.ruoyi.project.device.devNotice.controller;
 
+import com.ruoyi.common.constant.UserConstants;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.framework.aspectj.lang.annotation.Log;
 import com.ruoyi.framework.aspectj.lang.enums.BusinessType;
+import com.ruoyi.framework.jwt.JwtUtil;
 import com.ruoyi.framework.web.controller.BaseController;
 import com.ruoyi.framework.web.domain.AjaxResult;
 import com.ruoyi.framework.web.page.TableDataInfo;
 import com.ruoyi.project.device.devNotice.domain.DevNotice;
 import com.ruoyi.project.device.devNotice.service.IDevNoticeService;
+import com.ruoyi.project.system.user.domain.User;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -34,6 +37,10 @@ public class DevNoticeController extends BaseController {
     @RequiresPermissions("device:devNotice:view")
     @GetMapping()
     public String devNotice() {
+        User user = JwtUtil.getUser();
+        if (UserConstants.LANGUAGE_EN.equals(user.getLangVersion())) {
+            return prefix + "/devNoticeEn";
+        }
         return prefix + "/devNotice";
     }
 
@@ -67,6 +74,10 @@ public class DevNoticeController extends BaseController {
      */
     @GetMapping("/add")
     public String add() {
+        User user = JwtUtil.getUser();
+        if (UserConstants.LANGUAGE_EN.equals(user.getLangVersion())) {
+            return prefix + "/addEn";
+        }
         return prefix + "/add";
     }
 
@@ -88,6 +99,10 @@ public class DevNoticeController extends BaseController {
     public String edit(@PathVariable("id") Integer id, ModelMap mmap) {
         DevNotice devNotice = devNoticeService.selectDevNoticeById(id);
         mmap.put("devNotice", devNotice);
+        User user = JwtUtil.getUser();
+        if (UserConstants.LANGUAGE_EN.equals(user.getLangVersion())) {
+            return prefix + "/editEn";
+        }
         return prefix + "/edit";
     }
 

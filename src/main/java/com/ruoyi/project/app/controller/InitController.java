@@ -28,7 +28,7 @@ public class InitController extends BaseController {
     public AjaxResult ajaxLogin(@RequestBody User user) {
         try {
             System.out.println(user);
-            return loginService.login(user.getLoginName(),user.getPassword());
+            return loginService.login(user.getLoginName(),user.getPassword(),user.getLangVersion());
         } catch (AuthenticationException e) {
             String msg = "用户或密码错误";
             if (StringUtils.isNotEmpty(e.getMessage())) {

@@ -2,6 +2,7 @@ package com.ruoyi.project.app.service.impl;
 
 import com.ruoyi.common.constant.WorkConstants;
 import com.ruoyi.common.support.Convert;
+import com.ruoyi.common.utils.CodeUtils;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.TimeUtil;
 import com.ruoyi.framework.jwt.JwtUtil;
@@ -19,6 +20,8 @@ import com.ruoyi.project.production.productionLine.domain.ProductionLine;
 import com.ruoyi.project.production.productionLine.mapper.ProductionLineMapper;
 import com.ruoyi.project.production.workExceptionList.domain.WorkExceptionList;
 import com.ruoyi.project.production.workExceptionList.mapper.WorkExceptionListMapper;
+import com.ruoyi.project.system.config.domain.JpushInfo;
+import com.ruoyi.project.system.config.mapper.JpushInfoMapper;
 import com.ruoyi.project.system.user.domain.User;
 import com.ruoyi.project.system.user.mapper.UserMapper;
 import org.slf4j.Logger;
@@ -61,6 +64,9 @@ public class WatchServiceImpl implements IWatchService {
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private JpushInfoMapper jpushInfoMapper;
 
     /**
      * 拉取看板信息
@@ -122,7 +128,12 @@ public class WatchServiceImpl implements IWatchService {
                 // 查看拉长输入明细
                 watchInfo.setWorkId(workOrder.getId());
                 watchInfo.appStartPage();
-                List<WorkLog> workLogList = workLogMapper.selectWorkLogListByWatchInfo(watchInfo);
+                WorkLog wk = new WorkLog();
+                wk.setWorkId(workOrder.getId());
+                wk.setCompanyId(companyId);
+                wk.setPageNum(watchInfo.getPageNum());
+                wk.setPageSize(watchInfo.getPageSize());
+                List<WorkLog> workLogList = workLogMapper.selectWorkLogListByWatchInfo(wk);
                 watchDetail.setWorkLogList(workLogList);
                 info.setWatchDetail(watchDetail);
                 map.put("msg", "请求成功");
@@ -219,6 +230,43 @@ public class WatchServiceImpl implements IWatchService {
                     return map;
                 }
                 WatchInfo watch = new WatchInfo();
+                // 平板端公司账号首次登陆
+                if (StringUtils.isEmpty(watchInfo.getFirstTime())) {
+                    // 生成时间戳
+                    String firstTime = CodeUtils.getCode();
+                    // 查询对应账号，对应时间戳是否存在
+                    JpushInfo jpushInfo = jpushInfoMapper.selectJPushInfoByFirstTime(watchInfo.getLoginNumber().toUpperCase(),firstTime);
+                    if (jpushInfo != null) {
+                        map.put("code", 0);
+                        map.put("msg", "登陆失败，请重新登陆");
+                        return map;
+                    }
+                    jpushInfo = new JpushInfo();
+                    jpushInfo.setCompanyNumber(watchInfo.getLoginNumber().toUpperCase());
+                    jpushInfo.setFirstTime(firstTime);
+                    jpushInfo.setLastTime(new Date());
+                    jpushInfoMapper.insertJPushInfo(jpushInfo);
+
+                    JpushInfo jInfo = jpushInfoMapper.selectJPushInfoById(jpushInfo.getId());
+                    watch.setFirstTime(jInfo.getFirstTime());
+
+                } else {
+                    // 查询对应时间戳是否存在
+                    JpushInfo jpushInfo = jpushInfoMapper.selectJPushInfoByFirstTime(watchInfo.getLoginNumber().toUpperCase(),watchInfo.getFirstTime());
+                    if (jpushInfo == null) {
+                        // 新增
+                        jpushInfo = new JpushInfo();
+                        jpushInfo.setCompanyNumber(watchInfo.getLoginNumber().toUpperCase());
+                        jpushInfo.setFirstTime(watchInfo.getFirstTime());
+                        jpushInfo.setLastTime(new Date());
+                        jpushInfoMapper.insertJPushInfo(jpushInfo);
+                    } else {
+                        // 更新最后登录时间
+                        jpushInfo.setLastTime(new Date());
+                        jpushInfoMapper.updateJPushInfo(jpushInfo);
+                    }
+                    watch.setFirstTime(watchInfo.getFirstTime());
+                }
                 watch.setLineList(lineMapper.selectAllDef0(company.getCompanyId()));
                 watch.setCompanyId(company.getCompanyId());
                 map.put("code", 1);
@@ -230,6 +278,7 @@ public class WatchServiceImpl implements IWatchService {
             map.put("msg", "登录失败");
             return map;
         } catch (Exception e) {
+            e.printStackTrace();
             LOGGER.error("app端登录看板出现异常：" + e.getMessage());
         }
         map.put("code", 0);

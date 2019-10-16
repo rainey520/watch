@@ -62,7 +62,7 @@
         order by input_time desc
     </select>
 
-    <select id="selectWorkLogListByWatchInfo" parameterType="com.ruoyi.project.app.domain.WatchInfo" resultMap="WorkLogResult">
+    <select id="selectWorkLogListByWatchInfo" parameterType="WorkLog" resultMap="WorkLogResult">
         SELECT * FROM tab_work_log where company_id = #{companyId}
         <if test="workId != null and workId != '' ">
             and work_id = #{workId}

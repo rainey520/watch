@@ -21,6 +21,8 @@ public class WatchInfo implements Serializable {
     /** 登录账号密码 */
     private String loginNumber;
     private String loginPassword;
+    /** 首次登陆时间戳 */
+    private String firstTime;
 
     /** 产线信息 */
     private List<ProductionLine> lineList;
@@ -44,6 +46,14 @@ public class WatchInfo implements Serializable {
     private Integer pageNum;
     /** app端分页 每页显示记录数 */
     private Integer pageSize;
+
+    public String getFirstTime() {
+        return firstTime;
+    }
+
+    public void setFirstTime(String firstTime) {
+        this.firstTime = firstTime;
+    }
 
     public DevCompany getCompany() {
         return company;
@@ -157,6 +167,7 @@ public class WatchInfo implements Serializable {
         return "WatchInfo{" +
                 "loginNumber='" + loginNumber + '\'' +
                 ", loginPassword='" + loginPassword + '\'' +
+                ", firstTime='" + firstTime + '\'' +
                 ", lineList=" + lineList +
                 ", companyId=" + companyId +
                 ", workId=" + workId +

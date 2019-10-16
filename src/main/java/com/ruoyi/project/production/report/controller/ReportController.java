@@ -1,5 +1,6 @@
 package com.ruoyi.project.production.report.controller;
 
+import com.ruoyi.common.constant.UserConstants;
 import com.ruoyi.common.constant.WorkConstants;
 import com.ruoyi.common.utils.ServletUtils;
 import com.ruoyi.common.utils.StringUtils;
@@ -100,6 +101,10 @@ public class ReportController extends BaseController {
     @GetMapping
     @RequiresPermissions("production:report:view")
     public String report() {
+        User user = JwtUtil.getUser();
+        if (UserConstants.LANGUAGE_EN.equals(user.getLangVersion())) {
+            return prefix + "/reportEn";
+        }
         return prefix + "/report";
     }
 

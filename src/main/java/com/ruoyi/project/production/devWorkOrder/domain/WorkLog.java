@@ -22,7 +22,9 @@ public class WorkLog extends BaseEntity {
     private String workProduct;
     private Integer lineId;
     private String lineName;
+    /** 标准产量 */
     private Integer bzOutput;
+    /** 实际产量 */
     private Integer sjOutput;
     private Date inputData;
     private Date inputTime;

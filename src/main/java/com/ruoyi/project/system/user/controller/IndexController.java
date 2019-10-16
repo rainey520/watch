@@ -66,6 +66,9 @@ public class IndexController extends BaseController {
         mmap.put("menus", menus);
         mmap.put("user",user);
         mmap.put("copyrightYear", ruoYiConfig.getCopyrightYear());
+        if (UserConstants.LANGUAGE_EN.equals(user.getLangVersion())) {
+            return "indexEn";
+        }
         return "index";
     }
 
@@ -95,7 +98,9 @@ public class IndexController extends BaseController {
             mmap.put("userTag",user.getLoginTag());
         }
         mmap.put("version", ruoYiConfig.getVersion());
-
+        if (UserConstants.LANGUAGE_EN.equals(user.getLangVersion())) {
+            return "mainEn";
+        }
         return "main";
     }
 

@@ -22,6 +22,7 @@ public class WatchController {
     @Autowired
     private IWatchService watchService;
 
+
     /**
      * 查看生产看板信息
      */
@@ -37,5 +38,6 @@ public class WatchController {
     public Map<String,Object> watchLogin(@RequestBody WatchInfo watchInfo){
         return watchService.watchLogin(watchInfo);
     }
+
 
 }

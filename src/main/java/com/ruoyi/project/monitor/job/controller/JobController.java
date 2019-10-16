@@ -1,15 +1,5 @@
 package com.ruoyi.project.monitor.job.controller;
 
-import java.util.List;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.framework.aspectj.lang.annotation.Log;
 import com.ruoyi.framework.aspectj.lang.enums.BusinessType;
@@ -18,8 +8,14 @@ import com.ruoyi.framework.web.domain.AjaxResult;
 import com.ruoyi.framework.web.page.TableDataInfo;
 import com.ruoyi.project.monitor.job.domain.Job;
 import com.ruoyi.project.monitor.job.service.IJobService;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * 调度任务信息操作处理
@@ -53,7 +49,7 @@ public class JobController extends BaseController
     }
 
     @Log(title = "定时任务", businessType = BusinessType.EXPORT)
-    @RequiresPermissions("monitor:job:export")
+    @RequiresPermissions("monitor:job:add")
     @PostMapping("/export")
     @ResponseBody
     public AjaxResult export(Job job)
@@ -64,7 +60,7 @@ public class JobController extends BaseController
     }
 
     @Log(title = "定时任务", businessType = BusinessType.DELETE)
-    @RequiresPermissions("monitor:job:remove")
+    @RequiresPermissions("monitor:job:add")
     @PostMapping("/remove")
     @ResponseBody
     public AjaxResult remove(String ids)
@@ -81,7 +77,7 @@ public class JobController extends BaseController
         }
     }
     
-    @RequiresPermissions("monitor:job:detail")
+    @RequiresPermissions("monitor:job:list")
     @GetMapping("/detail/{jobId}")
     public String detail(@PathVariable("jobId") Long jobId, ModelMap mmap)
     {
@@ -94,7 +90,7 @@ public class JobController extends BaseController
      * 任务调度状态修改
      */
     @Log(title = "定时任务", businessType = BusinessType.UPDATE)
-    @RequiresPermissions("monitor:job:changeStatus")
+    @RequiresPermissions("monitor:job:add")
     @PostMapping("/changeStatus")
     @ResponseBody
     public AjaxResult changeStatus(Job job, HttpServletRequest request)
@@ -106,7 +102,7 @@ public class JobController extends BaseController
      * 任务调度立即执行一次
      */
     @Log(title = "定时任务", businessType = BusinessType.UPDATE)
-    @RequiresPermissions("monitor:job:changeStatus")
+    @RequiresPermissions("monitor:job:add")
     @PostMapping("/run")
     @ResponseBody
     public AjaxResult run(Job job)
@@ -149,7 +145,7 @@ public class JobController extends BaseController
      * 修改保存调度
      */
     @Log(title = "定时任务", businessType = BusinessType.UPDATE)
-    @RequiresPermissions("monitor:job:edit")
+    @RequiresPermissions("monitor:job:add")
     @PostMapping("/edit")
     @ResponseBody
     public AjaxResult editSave(Job job)

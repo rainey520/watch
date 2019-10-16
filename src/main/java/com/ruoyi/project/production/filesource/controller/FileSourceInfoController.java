@@ -1,11 +1,14 @@
 package com.ruoyi.project.production.filesource.controller;
 
+import com.ruoyi.common.constant.UserConstants;
 import com.ruoyi.common.exception.BusinessException;
+import com.ruoyi.framework.jwt.JwtUtil;
 import com.ruoyi.framework.web.controller.BaseController;
 import com.ruoyi.framework.web.domain.AjaxResult;
 import com.ruoyi.framework.web.page.TableDataInfo;
 import com.ruoyi.project.production.filesource.domain.FileSourceInfo;
 import com.ruoyi.project.production.filesource.service.IFileSourceInfoService;
+import com.ruoyi.project.system.user.domain.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -64,6 +67,10 @@ public class FileSourceInfoController extends BaseController {
     public String editFileName(Integer id, String fileName, ModelMap map){
         map.put("id",id);
         map.put("fileName",fileName.substring(0,fileName.lastIndexOf(".")));
+        User user = JwtUtil.getUser();
+        if (UserConstants.LANGUAGE_EN.equals(user.getLangVersion())) {
+            return prefix + "/editFileNameEn";
+        }
         return prefix + "/editFileName";
     }
 

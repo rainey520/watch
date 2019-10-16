@@ -1,14 +1,17 @@
 package com.ruoyi.project.production.workExceptionList.controller;
 
+import com.ruoyi.common.constant.UserConstants;
 import com.ruoyi.common.exception.BusinessException;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.framework.aspectj.lang.annotation.Log;
 import com.ruoyi.framework.aspectj.lang.enums.BusinessType;
+import com.ruoyi.framework.jwt.JwtUtil;
 import com.ruoyi.framework.web.controller.BaseController;
 import com.ruoyi.framework.web.domain.AjaxResult;
 import com.ruoyi.framework.web.page.TableDataInfo;
 import com.ruoyi.project.production.workExceptionList.domain.WorkExceptionList;
 import com.ruoyi.project.production.workExceptionList.service.IWorkExceptionListService;
+import com.ruoyi.project.system.user.domain.User;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -35,6 +38,10 @@ public class WorkExceptionListController extends BaseController {
     @RequiresPermissions("production:workExceptionList:list")
     @GetMapping()
     public String workExceptionList() {
+        User user = JwtUtil.getUser();
+        if (UserConstants.LANGUAGE_EN.equals(user.getLangVersion())) {
+            return prefix + "/workExceptionListEn";
+        }
         return prefix + "/workExceptionList";
     }
 
@@ -82,6 +89,10 @@ public class WorkExceptionListController extends BaseController {
     public String add2(int lineId,int workId,ModelMap mmap){
         mmap.put("lineId",lineId);
         mmap.put("workId",workId);
+        User user = JwtUtil.getUser();
+        if (UserConstants.LANGUAGE_EN.equals(user.getLangVersion())) {
+            return prefix +"/add2En";
+        }
         return prefix +"/add2";
     }
 
@@ -144,6 +155,10 @@ public class WorkExceptionListController extends BaseController {
     public String handleExcp(@PathVariable("id") Integer id, ModelMap mmap) {
         WorkExceptionList workExceptionList = workExceptionListService.selectWorkExceptionListById(id);
         mmap.put("workExceptionList", workExceptionList);
+        User user = JwtUtil.getUser();
+        if (UserConstants.LANGUAGE_EN.equals(user.getLangVersion())) {
+            return prefix + "/handleExcpEn";
+        }
         return prefix + "/handleExcp";
     }
 

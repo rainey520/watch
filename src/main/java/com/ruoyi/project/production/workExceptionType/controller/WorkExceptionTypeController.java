@@ -1,13 +1,16 @@
 package com.ruoyi.project.production.workExceptionType.controller;
 
+import com.ruoyi.common.constant.UserConstants;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.framework.aspectj.lang.annotation.Log;
 import com.ruoyi.framework.aspectj.lang.enums.BusinessType;
+import com.ruoyi.framework.jwt.JwtUtil;
 import com.ruoyi.framework.web.controller.BaseController;
 import com.ruoyi.framework.web.domain.AjaxResult;
 import com.ruoyi.framework.web.page.TableDataInfo;
 import com.ruoyi.project.production.workExceptionType.domain.WorkExceptionType;
 import com.ruoyi.project.production.workExceptionType.service.IWorkExceptionTypeService;
+import com.ruoyi.project.system.user.domain.User;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -36,7 +39,11 @@ public class WorkExceptionTypeController extends BaseController
 	@GetMapping()
 	public String workExceptionType()
 	{
-	    return prefix + "/workExceptionType";
+		User user = JwtUtil.getUser();
+		if (UserConstants.LANGUAGE_EN.equals(user.getLangVersion())) {
+			return prefix + "/workExceptionTypeEn";
+		}
+		return prefix + "/workExceptionType";
 	}
 	
 	/**
@@ -72,7 +79,11 @@ public class WorkExceptionTypeController extends BaseController
 	@GetMapping("/add")
 	public String add()
 	{
-	    return prefix + "/add";
+		User user = JwtUtil.getUser();
+		if (UserConstants.LANGUAGE_EN.equals(user.getLangVersion())) {
+			return prefix + "/addEn";
+		}
+		return prefix + "/add";
 	}
 	
 	/**
@@ -95,7 +106,11 @@ public class WorkExceptionTypeController extends BaseController
 	{
 		WorkExceptionType workExceptionType = workExceptionTypeService.selectWorkExceptionTypeById(id);
 		mmap.put("workExceptionType", workExceptionType);
-	    return prefix + "/edit";
+		User user = JwtUtil.getUser();
+		if (UserConstants.LANGUAGE_EN.equals(user.getLangVersion())) {
+			return prefix + "/editEn";
+		}
+		return prefix + "/edit";
 	}
 	
 	/**

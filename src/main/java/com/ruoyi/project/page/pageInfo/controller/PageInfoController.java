@@ -1,5 +1,6 @@
 package com.ruoyi.project.page.pageInfo.controller;
 
+import com.ruoyi.common.constant.UserConstants;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.framework.aspectj.lang.annotation.Log;
 import com.ruoyi.framework.aspectj.lang.enums.BusinessType;
@@ -9,6 +10,7 @@ import com.ruoyi.framework.web.domain.AjaxResult;
 import com.ruoyi.framework.web.page.TableDataInfo;
 import com.ruoyi.project.page.pageInfo.domain.PageInfo;
 import com.ruoyi.project.page.pageInfo.service.IPageInfoService;
+import com.ruoyi.project.system.user.domain.User;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,6 +42,10 @@ public class PageInfoController extends BaseController {
     @RequiresPermissions("page:pageInfo:view")
     @GetMapping()
     public String pageInfo() {
+        User user = JwtUtil.getUser();
+        if (UserConstants.LANGUAGE_EN.equals(user.getLangVersion())) {
+            return prefix + "/pageInfoEn";
+        }
         return prefix + "/pageInfo";
     }
 
@@ -73,6 +79,10 @@ public class PageInfoController extends BaseController {
      */
     @GetMapping("/add")
     public String add(ModelMap mmap) {
+        User user = JwtUtil.getUser();
+        if (UserConstants.LANGUAGE_EN.equals(user.getLangVersion())) {
+            return prefix + "/addEn";
+        }
         return prefix + "/add";
     }
 
@@ -96,13 +106,17 @@ public class PageInfoController extends BaseController {
         mmap.put("pageInfo", pageInfo);
         mmap.put("lines", pageInfoService.selectPageLineByPid(id, JwtUtil.getTokenUser(request).getCompanyId()));
         mmap.put("singles", pageInfoService.selectSingleWork(id));
+        User user = JwtUtil.getUser();
+        if (UserConstants.LANGUAGE_EN.equals(user.getLangVersion())) {
+            return prefix + "/editEn";
+        }
         return prefix + "/edit";
     }
 
     /**
      * 修改保存页面管理
      */
-    @RequiresPermissions("page:pageInfo:edit")
+    @RequiresPermissions("page:pageInfo:add")
     @Log(title = "页面管理", businessType = BusinessType.UPDATE)
     @PostMapping("/editSave")
     @ResponseBody
@@ -165,6 +179,10 @@ public class PageInfoController extends BaseController {
     @RequiresPermissions("page:pageInfo:pwd")
     public String pwdPage(@PathVariable("id") int id, ModelMap mmap) {
         mmap.put("p", pageInfoService.selectPageInfoByPageId(id));
+        User user = JwtUtil.getUser();
+        if (UserConstants.LANGUAGE_EN.equals(user.getLangVersion())) {
+            return prefix + "/pwdEn";
+        }
         return prefix + "/pwd";
     }
 

@@ -1,21 +1,25 @@
 package com.ruoyi.project.monitor.job.service;
 
-import java.util.List;
-import javax.annotation.PostConstruct;
-import javax.servlet.http.HttpServletRequest;
-
-import com.ruoyi.framework.jwt.JwtUtil;
-import org.quartz.CronTrigger;
-import org.quartz.Scheduler;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import com.ruoyi.common.constant.ScheduleConstants;
 import com.ruoyi.common.support.Convert;
+import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.security.ShiroUtils;
+import com.ruoyi.framework.jwt.JwtUtil;
 import com.ruoyi.project.monitor.job.domain.Job;
 import com.ruoyi.project.monitor.job.mapper.JobMapper;
 import com.ruoyi.project.monitor.job.util.CronUtils;
 import com.ruoyi.project.monitor.job.util.ScheduleUtils;
+import com.ruoyi.project.system.config.mapper.JpushInfoMapper;
+import org.quartz.Scheduler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
+import java.util.List;
 
 /**
  * 定时任务调度信息 服务层
@@ -25,11 +29,17 @@ import com.ruoyi.project.monitor.job.util.ScheduleUtils;
 @Service
 public class JobServiceImpl implements IJobService
 {
+    /** logger */
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobServiceImpl.class);
+
     @Autowired
     private Scheduler scheduler;
 
     @Autowired
     private JobMapper jobMapper;
+
+    @Autowired
+    private JpushInfoMapper jpushInfoMapper;
 
     /**
      * 项目启动时，初始化定时器
@@ -224,4 +234,20 @@ public class JobServiceImpl implements IJobService
     {
         return CronUtils.isValid(cronExpression);
     }
+
+    /**
+     * 删除两个月都未登录的极光推送列表
+     */
+    @Override
+    public void deleteInvalidTime() {
+        // 获取未登录的时间
+        try {
+            Date invalidDate = DateUtils.stepMonth(new Date(), -2);
+            jpushInfoMapper.deleteInvalidTime(invalidDate);
+        } catch (Exception e) {
+            LOGGER.error("删除两个月都未登录的极光推送列表出现异常：" + e.getMessage());
+            // e.printStackTrace();
+        }
+    }
+
 }

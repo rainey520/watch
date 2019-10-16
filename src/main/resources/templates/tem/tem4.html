@@ -297,10 +297,11 @@
                     if (item.workLogList && item.workLogList.length > 0) {
                         // var workSize = item.workLogList.length;
                         var workItem = '';
-                        for (var i = 0;i < 9; i++){
+                        for (var i = 0;i < item.workLogList.length; i++){
                             var workData = item.workLogList[i];
                             workItem += '' +
-                                '<tr style="font-size: 25px;text-align: center"><td>'+ workData.inputTime+'</td>' +
+                                '<tr style="font-size: 25px;text-align: center">' +
+                                '<td>'+ workData.inputTime +'</td>' +
                                 '<td>'+ workData.bzOutput +'</td>' +
                                 '<td>'+ workData.totalOutput +'</td>' +
                                 '<td>'+workData.rateNum+'</td></tr>'
