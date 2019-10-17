@@ -43,6 +43,7 @@ import com.ruoyi.project.production.singleWork.mapper.SingleWorkMapper;
 import com.ruoyi.project.production.singleWork.mapper.SingleWorkOrderMapper;
 import com.ruoyi.project.production.workOrderChange.domain.WorkOrderChange;
 import com.ruoyi.project.production.workOrderChange.mapper.WorkOrderChangeMapper;
+import com.ruoyi.project.production.workstation.mapper.WorkstationMapper;
 import com.ruoyi.project.quality.mesBatch.domain.MesBatch;
 import com.ruoyi.project.quality.mesBatch.domain.MesBatchDetail;
 import com.ruoyi.project.quality.mesBatch.mapper.MesBatchDetailMapper;
@@ -79,7 +80,9 @@ import java.util.*;
 @Service("workOrder")
 public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
 
-    /** logger */
+    /**
+     * logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(DevWorkOrderServiceImpl.class);
 
     @Autowired
@@ -210,6 +213,7 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
 
     /**
      * 设置工单相关信息
+     *
      * @param workOrder
      * @param user
      * @param product
@@ -271,8 +275,9 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
         if (one != userId.intValue() && tow != userId.intValue() && !u.getLoginName().equals("admin")) {
             throw new BusinessException("不是工单负责人");
         }
-        // 消息推送
-        JPushMsg(company);
+        // 消息推送生产看板
+        JPushWatchMsg(company);
+        JPushMsg(workOrder);
         if (StringUtils.isNotNull(devWorkOrder.getCumulativeNumber()) && devWorkOrder.getCumulativeNumber() > devWorkOrder.getOldInputNum()) {
             // 新增拉长操作记录
             WorkLog workLog = new WorkLog();
@@ -289,7 +294,7 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
             if (workOrder.getOperationStatus().equals(WorkConstants.OPERATION_STATUS_STARTING)) {
                 totalHour += TimeUtil.getDateDel(workOrder.getSignTime(), new Date());
             }
-            workLog.setBzOutput((int)(totalHour * workOrder.getProductStandardHour()));
+            workLog.setBzOutput((int) (totalHour * workOrder.getProductStandardHour()));
             workLog.setSjOutput(devWorkOrder.getCumulativeNumber() - devWorkOrder.getOldInputNum());
             workLog.setTotalOutput(devWorkOrder.getCumulativeNumber());
             workLog.setInputData(new Date());
@@ -407,7 +412,10 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
                 //标记用时
                 devWorkOrder.setSignHuor(0F);
             }
-            JPushMsg(company);
+            // 推送ASOP
+            JPushMsg(devWorkOrder);
+            // 推送生产看板
+            JPushWatchMsg(company);
             // 修改工单的状态为进行中
             devWorkOrder.setWorkorderStatus(WorkConstants.WORK_STATUS_STARTING);
             // 修改工单的操作状态为正在进行，页面显示暂停按钮
@@ -454,7 +462,10 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
                 !user.getLoginName().equals("admin")) {
             throw new BusinessException("不是工单负责人");
         }
-        JPushMsg(company);
+        // 推送生产看板
+        JPushWatchMsg(company);
+        // 推送ASOP
+        JPushMsg(devWorkOrder);
         updateWork(user, devWorkOrder);
         return devWorkOrderMapper.updateDevWorkOrder(devWorkOrder);
     }
@@ -475,7 +486,7 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
         // 设置结束时间
         devWorkOrder.setEndTime(new Date());
         // 设置统计用时
-        devWorkOrder.setSignHuor(devWorkOrder.getSignHuor() + TimeUtil.getDateDel(devWorkOrder.getSignTime(),new Date()));
+        devWorkOrder.setSignHuor(devWorkOrder.getSignHuor() + TimeUtil.getDateDel(devWorkOrder.getSignTime(), new Date()));
         devWorkOrder.setUpdateBy(user.getUserName());
         devWorkOrder.setUpdateTime(new Date());
     }
@@ -587,6 +598,10 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
      */
     @Override
     public DevWorkOrder findWorkInfoById(int work_id) {
+        User user = JwtUtil.getUser();
+        if (user == null) {
+            return null;
+        }
         //查询对应的工单是否存在
         DevWorkOrder order = devWorkOrderMapper.selectDevWorkOrderById(work_id);
         if (order == null || order.getLineId() == null) {
@@ -595,6 +610,14 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
         //查询对应的产线信息
         ProductionLine line = productionLineMapper.selectProductionLineById(order.getLineId());
         if (line == null) return null;
+        if (null != line) {
+            int lineSign = 0;
+            if (user.getUserId().intValue() == line.getDeviceLiable() || user.getUserId().intValue() == line.getDeviceLiableTow()) {
+                lineSign = 1;
+            }
+            order.setLineSign(lineSign);
+            order.setParam1(line.getLineName());
+        }
         //判断产线是否是手动
         float standardHour = order.getSignHuor();
         //达成率默认为0
@@ -1365,16 +1388,23 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
     private String MASTER_SECRET;
 
     @Value("${jpush.appkey}")
-    private  String APP_KEY;
+    private String APP_KEY;
 
     @Autowired
     private JpushInfoMapper jpushInfoMapper;
 
-    private void JPushMsg(DevCompany company){
+    @Autowired
+    private WorkstationMapper workstationMapper;
+
+    /**
+     * 推送生产看板
+     * @param company
+     */
+    private void JPushWatchMsg(DevCompany company) {
         List<String> alias = jpushInfoMapper.selectJPushInfoList(company.getLoginNumber());
         JSONObject data = new JSONObject();
-        data.put("msg","1");
-        //进行消息推送
+        data.put("msg", "1");
+        //进行消息推送生产看板
         JPushClient jpushClient = new JPushClient(MASTER_SECRET, APP_KEY, null, ClientConfig.getInstance());
         PushPayload payload = PushPayload.newBuilder()
                 .setPlatform(Platform.all())
@@ -1392,8 +1422,43 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
         }
     }
 
-    /***************************消息推送结束**********************************/
+    /**
+     * 推送ASOP
+     * @param order
+     */
+    private void JPushMsg(DevWorkOrder order) {
+        if (order == null) {
+            return;
+        }
+        List<String> alias = null;
+        ProductionLine line = productionLineMapper.selectProductionLineById(order.getLineId());
+        //2、查询对应产线所有配置SOP看板硬件的硬件编码
+        if (line != null) {
+            alias = workstationMapper.countLineKBCode(line.getCompanyId(), line.getId());
+        }
+        if (alias == null || alias.size() <= 0) {
+            return;
+        }
+        JSONObject data = new JSONObject();
+        data.put("msg", "1");
+        //进行消息推送
+        JPushClient jpushClient = new JPushClient("54c72e81c46f579783b64aec", "730860b2325df5af2335ee1c", null, ClientConfig.getInstance());
+        PushPayload payload = PushPayload.newBuilder()
+                .setPlatform(Platform.all())
+                .setAudience(Audience.alias(alias))
+                .setNotification(Notification.alert(data.toString()))
+                .build();
+        try {
+            PushResult result = jpushClient.sendPush(payload);
+        } catch (APIConnectionException e) {
+            e.printStackTrace();
+        } catch (APIRequestException e) {
+            e.printStackTrace();
+        }
 
+    }
+
+    /***************************消息推送结束**********************************/
 
 
     /******************************************************************************************************
@@ -1414,7 +1479,7 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
         }
         workOrder.setCompanyId(user.getCompanyId());
         List<DevWorkOrder> workOrders = devWorkOrderMapper.selectDevWorkOrderList(workOrder);
-        getLineOrHouseName1(workOrders,user);
+        getLineOrHouseName1(workOrders, user);
         return workOrders;
     }
 
@@ -1438,7 +1503,6 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
         setWorkInfo(workOrder, user, product);
         return devWorkOrderMapper.insertDevWorkOrder(workOrder);
     }
-
 
 
     @Override
@@ -1556,7 +1620,7 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
     /**
      * app查工单信息
      */
-    private void getLineOrHouseName1(List<DevWorkOrder> workOrders,User user) {
+    private void getLineOrHouseName1(List<DevWorkOrder> workOrders, User user) {
         ProductionLine line;
         int lineSign = 0;
         for (DevWorkOrder workOrder : workOrders) {
@@ -1580,6 +1644,7 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
 
     /**
      * 通过工单id查询工单基本信息
+     *
      * @param workId 工单id
      * @return 结果
      */

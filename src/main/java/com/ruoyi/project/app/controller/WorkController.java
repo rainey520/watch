@@ -55,7 +55,7 @@ public class WorkController {
     public AjaxResult appSelectWorkById(@RequestBody DevWorkOrder workOrder){
         try {
             if (workOrder != null && workOrder.getId() != null) {
-                return AjaxResult.success(workOrderService.appSelectWorkById(workOrder.getId()));
+                return AjaxResult.success(workOrderService.findWorkInfoById(workOrder.getId()));
             }
         } catch (BusinessException e) {
             return AjaxResult.error(e.getMessage());
