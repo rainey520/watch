@@ -19,11 +19,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="createDate"    column="create_date"    />
         <result property="sign"    column="sign"    />
         <result property="devType"    column="dev_type"    />
+        <result property="lineId"    column="line_id"    />
     </resultMap>
 	
 	<sql id="selectDevListVo">
         select id, device_id, device_status,config_status, device_name, dev_model_id, device_upload_time,
-         company_id, remark, def_id, config_date, create_date,sign,dev_type from dev_list
+         company_id, remark, def_id, config_date, create_date,sign,dev_type,line_id from dev_list
     </sql>
 	
     <select id="selectDevListList" parameterType="DevList" resultMap="DevListResult">
@@ -75,6 +76,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 			<if test="configDate != null  ">config_date,</if>
 			<if test="createDate != null  ">create_date,</if>
             <if test="devType != null  ">dev_type,</if>
+            <if test="lineId != null  ">line_id,</if>
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="id != null  and id != ''  ">#{id},</if>
@@ -89,6 +91,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 			<if test="configDate != null  ">#{configDate},</if>
 			<if test="createDate != null  ">#{createDate},</if>
             <if test="devType != null  ">#{devType},</if>
+            <if test="lineId != null  ">#{lineId},</if>
          </trim>
     </insert>
 	 
@@ -97,10 +100,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <trim prefix="SET" suffixOverrides=",">
             <if test="deviceId != null  and deviceId != ''  ">device_id = #{deviceId},</if>
             <if test="deviceStatus != null  ">device_status = #{deviceStatus},</if>
+            <if test="companyId != null  ">company_id = #{companyId},</if>
             <if test="configStatus != null  ">config_status = #{configStatus},</if>
+            <if test="sign != null">sign = #{sign},</if>
             device_name = #{deviceName},
             remark = #{remark},
             <if test="configDate != null  ">config_date = #{configDate},</if>
+            <if test="lineId != null  ">line_id = #{lineId},</if>
         </trim>
         where id = #{id}
     </update>
@@ -205,4 +211,14 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <select id="selectDevListByComCode" resultMap="DevListResult1">
          SELECT * FROM dev_list where device_id = #{code} and company_id = #{companyId} and def_id = 0 limit 1;
     </select>
+
+    <!--通过产线查询关联的硬件信息-->
+    <select id="selectDevListByLineId" resultMap="DevListResult1">
+         SELECT * FROM dev_list where def_id = 0 and line_id = #{lineId} limit 1;
+    </select>
+
+    <!--更新硬件关联的产线信息-->
+    <update id="updateDevLineTag">
+         update dev_list set sign = #{sign}, device_name = #{deviceName},line_id = #{lineId} where device_id = #{code}
+    </update>
 </mapper>

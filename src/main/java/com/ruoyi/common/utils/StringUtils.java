@@ -1,8 +1,9 @@
 package com.ruoyi.common.utils;
 
+import com.ruoyi.common.support.StrFormatter;
+
 import java.util.Collection;
 import java.util.Map;
-import com.ruoyi.common.support.StrFormatter;
 
 /**
  * 字符串工具类
@@ -360,5 +361,17 @@ public class StringUtils extends org.apache.commons.lang3.StringUtils
             result.append(camel.substring(1).toLowerCase());
         }
         return result.toString();
+    }
+
+
+    /**
+     * 判断一个浮点字符是否为 0.00F或者为空
+     */
+    public static boolean isZeroOrNull(Float f){
+        if (f == null || f == 0.00F) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }

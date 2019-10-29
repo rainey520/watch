@@ -6,9 +6,11 @@
 <div class="container-div">
     <div class="row">
         <div class="col-sm-12 search-collapse">
+            <input type="hidden" id="vipSign" name="vipSign" th:value="${vipSign}">
             <div class="nav-tabs-custom">
                 <ul class="nav nav-tabs">
                     <li class="active"><a href="#line-report" data-toggle="tab" aria-expanded="true">Production line report</a></li>
+                    <a style="float: right;margin-right: 5px" class="btn btn-danger" href="javascript:void(0)" onclick="showComCost()" shiro:hasPermission="production:cost:list">Company data analysis</a>
                     <!--<li><a href="#single-report" data-toggle="tab" aria-expanded="false">车间报表</a></li>-->
                 </ul>
                 <div class="tab-content">
@@ -224,6 +226,18 @@
     function editFileName(id, fileName) {
         var url = prefix + '/editFileName?id=' + id + "&fileName=" + fileName;
         $.modal.open("Modify report name", url, '650', '300');
+    }
+
+    /**
+     * 公司成本分析
+     */
+    function showComCost() {
+        var vipSign = $("#vipSign").val();
+        if (vipSign == 1) {
+            createMenuItem( ctx +"production/cost","Company data analysis");
+        } else {
+            $.modal.alertWarning("Non VIP members, please contact the administrator to upgrade");
+        }
     }
 </script>
 </body>

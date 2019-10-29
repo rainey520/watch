@@ -32,7 +32,7 @@ public class DevList extends BaseEntity
 	/** 名称  */
 	@Excel(name = "硬件名称")
 	private String deviceName;
-	/**  */
+	/**  硬件编码类型 1、看板硬件，2、计数器硬件*/
 	private Integer devModelId;
 	/**  */
 	private Integer deviceUploadTime;
@@ -59,6 +59,16 @@ public class DevList extends BaseEntity
 	 * app端交互设备类型字段，硬件需要特别判断，其他情况该字段显示为devType
 	 */
 	private String deviceType;
+	/** 计数器硬件关联的产线id */
+	private Integer lineId;
+
+	public Integer getLineId() {
+		return lineId;
+	}
+
+	public void setLineId(Integer lineId) {
+		this.lineId = lineId;
+	}
 
 	public String getDeviceType() {
 		return deviceType;
@@ -214,5 +224,30 @@ public class DevList extends BaseEntity
 
 	public void setSign(Integer sign) {
 		this.sign = sign;
+	}
+
+	@Override
+	public String toString() {
+		return "DevList{" +
+				"id=" + id +
+				", deviceId='" + deviceId + '\'' +
+				", devModel='" + devModel + '\'' +
+				", deviceStatus=" + deviceStatus +
+				", configStatus=" + configStatus +
+				", deviceName='" + deviceName + '\'' +
+				", devModelId=" + devModelId +
+				", deviceUploadTime=" + deviceUploadTime +
+				", companyId=" + companyId +
+				", comName='" + comName + '\'' +
+				", remark='" + remark + '\'' +
+				", defId=" + defId +
+				", configDate=" + configDate +
+				", createDate=" + createDate +
+				", devIos=" + devIos +
+				", sign=" + sign +
+				", devType=" + devType +
+				", deviceType='" + deviceType + '\'' +
+				", lineId=" + lineId +
+				'}';
 	}
 }

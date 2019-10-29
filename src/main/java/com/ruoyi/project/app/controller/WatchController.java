@@ -1,5 +1,6 @@
 package com.ruoyi.project.app.controller;
 
+import com.ruoyi.project.app.domain.Index;
 import com.ruoyi.project.app.domain.WatchInfo;
 import com.ruoyi.project.app.service.IWatchService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,5 +40,13 @@ public class WatchController {
         return watchService.watchLogin(watchInfo);
     }
 
+
+    /**
+     * 异常上报
+     */
+    @RequestMapping("/workExc")
+    public Map<String,Object> workExc(@RequestBody Index index){
+        return watchService.workExc(index);
+    }
 
 }

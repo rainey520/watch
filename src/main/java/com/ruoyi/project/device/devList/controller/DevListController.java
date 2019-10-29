@@ -1,5 +1,6 @@
 package com.ruoyi.project.device.devList.controller;
 
+import com.ruoyi.common.constant.DevConstants;
 import com.ruoyi.common.exception.BusinessException;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.framework.aspectj.lang.annotation.Log;
@@ -52,10 +53,24 @@ public class DevListController extends BaseController
 	@RequiresPermissions("device:devList:list")
 	@PostMapping("/list")
 	@ResponseBody
-	public TableDataInfo list(DevList devList,HttpServletRequest request)
+	public TableDataInfo list(DevList devList)
 	{
 		startPage();
-        List<DevList> list = devListService.selectDevListList(devList,request);
+        List<DevList> list = devListService.selectDevListList(devList);
+		return getDataTable(list);
+	}
+
+	/**
+	 * 查询硬件列表
+	 */
+	@PostMapping("/list2")
+	@ResponseBody
+	public TableDataInfo list2(DevList devList)
+	{
+		startPage();
+		// 查询计算器硬件信息
+		devList.setDevModelId(DevConstants.DEV_MODEL_JS);
+		List<DevList> list = devListService.selectDevListList(devList);
 		return getDataTable(list);
 	}
 	
@@ -66,9 +81,9 @@ public class DevListController extends BaseController
 	@RequiresPermissions("device:devList:export")
     @PostMapping("/export")
     @ResponseBody
-    public AjaxResult export(DevList devList,HttpServletRequest request)
+    public AjaxResult export(DevList devList)
     {
-    	List<DevList> list = devListService.selectDevListList(devList,request);
+    	List<DevList> list = devListService.selectDevListList(devList);
         ExcelUtil<DevList> util = new ExcelUtil<DevList>(DevList.class);
         return util.exportExcel(list, "devList");
     }

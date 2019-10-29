@@ -2,9 +2,11 @@ package com.ruoyi.project.app.service;
 
 import com.ruoyi.project.app.domain.Index;
 import com.ruoyi.project.app.domain.Init;
+import com.ruoyi.project.app.domain.LineData;
 import com.ruoyi.project.system.menu.domain.Menu;
 
 import java.util.List;
+import java.util.Map;
 
 public interface IInitService {
     /**
@@ -25,4 +27,17 @@ public interface IInitService {
      * @return 工单号
      */
     String getWorkCode();
+
+    /**
+     * 获取计数器硬件编码信息
+     * @return 计数器编码
+     */
+    String getDevJsCode();
+
+    /**
+     * 计数器上传校验
+     * @param lineData 上传信息
+     * @return 结果
+     */
+    Map<String, Object> checkJsCode(LineData lineData);
 }

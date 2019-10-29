@@ -47,7 +47,9 @@ import java.util.Map;
 public class DevWorkOrderController extends BaseController {
     private String prefix = "production/devWorkOrder";
 
-    /** logger */
+    /**
+     * logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(DevWorkOrderController.class);
 
     @Autowired
@@ -144,7 +146,7 @@ public class DevWorkOrderController extends BaseController {
     @Log(title = "工单", businessType = BusinessType.INSERT)
     @PostMapping("/add")
     @ResponseBody
-    public AjaxResult addSave(DevWorkOrder devWorkOrder)  {
+    public AjaxResult addSave(DevWorkOrder devWorkOrder) {
         try {
             return toAjax(devWorkOrderService.insertDevWorkOrder(devWorkOrder));
         } catch (Exception e) {
@@ -214,7 +216,7 @@ public class DevWorkOrderController extends BaseController {
     @ResponseBody
     public AjaxResult editWorkerOrderById(Integer id) {
         try {
-            return toAjax(devWorkOrderService.editWorkerOrderById(id, null));
+            return toAjax(devWorkOrderService.editWorkerOrderById(id));
         } catch (BusinessException e) {
             return error(e.getMessage());
         }
@@ -554,10 +556,10 @@ public class DevWorkOrderController extends BaseController {
                 if (workOrder.getMenuList() != null) {
                     map.put("menuList", menuService.selectMenuListByParentIdAndUserId(user.getUserId().intValue(), workOrder.getMenuList()));
                 }
-                map.put("workOrderList",devWorkOrderService.appSelectDevWorkOrderList(workOrder));
+                map.put("workOrderList", devWorkOrderService.appSelectDevWorkOrderList(workOrder));
                 return AjaxResult.success("请求成功", map);
             }
-           return error();
+            return error();
         } catch (Exception e) {
             e.printStackTrace();
             return AjaxResult.error("请求失败");
@@ -589,15 +591,13 @@ public class DevWorkOrderController extends BaseController {
     @ResponseBody
     public AjaxResult appEditWorkStatus(@RequestBody DevWorkOrder workOrder) {
         try {
-            User user = JwtUtil.getUser();
-            if (workOrder != null && user != null) {
-                if (workOrder.getId() != null ) {
-                     if (workOrder.getWorkorderStatus() != null && workOrder.getWorkorderStatus() == WorkConstants.WORK_STATUS_END ) {
-                        // 结束工单
-                        return toAjax(devWorkOrderService.finishWorkerOrder(workOrder.getId()));
-                    } else {
-                        return toAjax(devWorkOrderService.editWorkerOrderById(workOrder.getId(), user.getUserId().intValue()));
-                    }
+            if (workOrder != null && workOrder.getId() != null) {
+                if (workOrder.getWorkorderStatus() != null && workOrder.getWorkorderStatus().equals(WorkConstants.WORK_STATUS_END)) {
+                    // 结束工单
+                    return toAjax(devWorkOrderService.finishWorkerOrder(workOrder.getId()));
+                } else {
+                    // 开始暂停工单
+                    return toAjax(devWorkOrderService.editWorkerOrderById(workOrder.getId()));
                 }
             }
             return error();
@@ -631,7 +631,7 @@ public class DevWorkOrderController extends BaseController {
      */
     @PostMapping("/appWorkOrderEcn")
     @ResponseBody
-    public AjaxResult appSelectWorkOrderEcn(@RequestBody DevWorkOrder workOrder){
+    public AjaxResult appSelectWorkOrderEcn(@RequestBody DevWorkOrder workOrder) {
         if (workOrder != null && workOrder.getId() != null) {
             return AjaxResult.success(devWorkOrderService.selectWorkOrderEcn(workOrder.getId()));
         }
@@ -643,7 +643,7 @@ public class DevWorkOrderController extends BaseController {
      */
     @PostMapping("/appSelectById")
     @ResponseBody
-    public AjaxResult appSelectWorkById(@RequestBody DevWorkOrder workOrder){
+    public AjaxResult appSelectWorkById(@RequestBody DevWorkOrder workOrder) {
         if (workOrder != null && workOrder.getId() != null) {
             return AjaxResult.success(devWorkOrderService.selectDevWorkOrderById(workOrder.getId()));
         }
@@ -652,19 +652,20 @@ public class DevWorkOrderController extends BaseController {
 
     /**
      * 新增工单
+     *
      * @param workOrder
      * @return
      */
     @PostMapping("/appAddWork")
     @ResponseBody
-    public AjaxResult appAddWork(@RequestBody DevWorkOrder workOrder){
+    public AjaxResult appAddWork(@RequestBody DevWorkOrder workOrder) {
         try {
-            workOrder.setProductionStart(DateUtils.dateTime("yyyy-MM-dd",workOrder.getEcnText()));
+            workOrder.setProductionStart(DateUtils.dateTime("yyyy-MM-dd", workOrder.getEcnText()));
             return toAjax(devWorkOrderService.appSaveWorkOrder(workOrder));
-        }catch (Exception e){
+        } catch (Exception e) {
             // e.printStackTrace();
             LOGGER.error("app新增工单出现异常：" + e.getMessage());
-            return  error(e.getMessage());
+            return error(e.getMessage());
         }
     }
 }

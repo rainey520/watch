@@ -13,7 +13,9 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 工单工单异常类型 服务层实现
@@ -112,5 +114,33 @@ public class WorkExceptionTypeServiceImpl implements IWorkExceptionTypeService {
             }
         }
         return WorkConstants.EXC_TYPE_NAME_UNIQUE;
+    }
+
+    /**
+     * 查看公司所有的异常类型列表
+     * @return 结果
+     */
+    @Override
+    public Map<String, Object> selectWorkExcTypeList() {
+        Map<String,Object> map = new HashMap<>(16);
+        try {
+            User user = JwtUtil.getUser();
+            if (user == null) {
+                map.put("code",0);
+                map.put("msg","用户未登录或者登录超时");
+                return map;
+            }
+            List<WorkExceptionType> typeList = workExceptionTypeMapper.selectWorkExcTypeListByComId(user.getCompanyId());
+            map.put("code",1);
+            map.put("data",typeList);
+            map.put("msg","请求成功");
+            return map;
+
+        } catch (Exception e) {
+
+        }
+        map.put("code",0);
+        map.put("msg","获取失败");
+        return map;
     }
 }

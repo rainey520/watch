@@ -19,6 +19,7 @@
                             <div class="panel panel-primary">
                                 <div class="panel-heading">
                                     List of work orders
+                                    <a style="margin-left: 20px;" class="btn btn-danger btn-sm"  href="javascript:void(0)" onclick="showTimeRecord()">Attendance Record</a>
                                 </div>
                                 <div class="panel-body" style="max-height: 350px;overflow-y: scroll">
                                     <form>
@@ -32,7 +33,7 @@
                                                     <input name="lineId" th:value="${line.id}">
                                                 </li>
                                                 <li>
-                                                    Production state：
+                                                    Work order production status：
                                                     <select style="width: 100px" name="workorderStatus"
                                                             id="workorderStatus">
                                                         <option selected value="">All</option>
@@ -42,7 +43,7 @@
                                                     </select>
                                                 </li>
                                                 <li class="select-time">
-                                                    <label>Planning start time： </label>
+                                                    <label>startTime： </label>
                                                     <input type="text" class="time-input" id="startTime"
                                                            placeholder="startTime" name="params[beginTime]"/>
                                                     <span>-</span>
@@ -65,7 +66,7 @@
                         <div class="col-sm-12" style="margin-top: 5px;">
                             <div class="panel panel-primary">
                                 <div class="panel-heading">
-                                    Work data <span style="margin-left: 20px;font-size: 12px" id="start-time"></span> &nbsp;&nbsp;&nbsp;
+                                    work data <span style="margin-left: 20px;font-size: 12px" id="start-time"></span> &nbsp;&nbsp;&nbsp;
                                     <span style="font-weight: bold;font-size: 18px;">Production state：</span>
                                     <span style="font-weight: bold;font-size: 24px;color: #fff"
                                           id="line-live-work-gdzt">Not started</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span
@@ -80,11 +81,11 @@
                                        shiro:hasPermission="device:devWorkOrder:edit"><i></i>finish</a>
                                     <a class="btn btn-success btn-sm " id="action-btn-save" href="javascript:void(0)"
                                        style="display: none" shiro:hasPermission="device:devWorkOrder:edit"
-                                       onclick="save()"> <i></i>REF-Data</a>
-                                    <a class="btn btn-success btn-sm " id="action-btn-submit" href="javascript:void(0)"
-                                       style="display: none" onclick="submitWorkOrder()"
-                                       shiro:hasPermission="device:devWorkOrder:edit">
-                                        <i></i>submit</a>
+                                       onclick="save()"> <i></i>Refresh</a>
+                                    <!--<a class="btn btn-success btn-sm " id="action-btn-submit" href="javascript:void(0)"-->
+                                       <!--style="display: none" onclick="submitWorkOrder()"-->
+                                       <!--shiro:hasPermission="device:devWorkOrder:edit">-->
+                                        <!--<i></i>submit</a>-->
                                 </div>
                                 <div class="panel-body">
                                     <input type="hidden" id="work-id" value="0">
@@ -93,10 +94,10 @@
                                             <table style="width: 98%;" cellspacing="5">
                                                 <tbody>
                                                 <tr>
-                                                    <td align="right"><label>Work order number:<input type="text"
+                                                    <td align="right"><label>work code:<input type="text"
                                                                                         id="line-live-work-id" readonly></label>
                                                     </td>
-                                                    <td align="right"><label>Quantity of production:<input type="number"
+                                                    <td align="right"><label>work number:<input type="number"
                                                                                          id="line-live-work-num" readonly="readonly"></label>
                                                     </td>
                                                     <td align="right"><label>prodcut code:<input type="text" readonly
@@ -105,7 +106,7 @@
                                                     <td align="right"><label>product name:<input type="text" readonly
                                                                                          id="line-live-work-product-name"></label>
                                                     </td>
-                                                    <td align="right"><label>Standard working hours:<input type="number" readonly="readonly"
+                                                    <td align="right"><label>Standard output:<input type="number" readonly="readonly"
                                                                                          id="line-live-work-stadard-hour"></label>
                                                     </td>
                                                 </tr>
@@ -114,9 +115,6 @@
                                                         <input type="hidden" id="line-live-work-oldNum">
                                                         <input type="number"  id="line-live-work-cumulative"
                                                                th:readonly="${line.manual == 1 ?false:true}"></label>
-                                                    </td>
-                                                    <td align="right"><label>Quantity of warehousing:<input type="number"
-                                                                                         id="line-live-work-rk"></label>
                                                     </td>
                                                     <td align="right"><label>Scrap quantity:<input type="number"
                                                                                          id="line-live-work-bf"></label>
@@ -127,39 +125,50 @@
                                                     <td align="right"><label>Rate of achievement[%]:<input type="number" readonly="readonly"
                                                                                            id="line-live-work-dcl"></label>
                                                     </td>
+                                                    <td align="right"><label>UPH:<input type="number" readonly="readonly"
+                                                                                        id="line-live-work-uph"></label>
+                                                    </td>
                                                 </tr>
                                                 <tr>
-                                                    <td align="right"><label>Attendance hours:<input type="number"
-                                                                                         id="line-live-work-zcgs"></label>
-                                                    </td>
-                                                    <td align="right"><label>Adjustment of working hours:<input type="number"
-                                                                                         id="line-live-work-tzgs"></label>
-                                                    </td>
-                                                    <td align="right"><label>Overtime work hours:<input type="number"
-                                                                                         id="line-live-work-gbgs"
-                                                                                         style="width: 40%"><select
-                                                            style="border: 1px solid #ddd;border-radius: 4px;background: transparent;outline: none;height: 26px;"
-                                                            id="line-live-work-gbbl">
-                                                        <option value="1.5">1.5X</option>
-                                                        <option value="2">2.0X</option>
-                                                        <option value="3">3.0X</option>
-                                                    </select></label></td>
-                                                    <td align="right"><label>Number of workers:<input type="number"
+                                                    <!--<td align="right"><label>出勤工时:<input type="number"-->
+                                                    <!--id="line-live-work-zcgs"></label>-->
+                                                    <!--</td>-->
+                                                    <!--<td align="right"><label>调整工时:<input type="number"-->
+                                                    <!--id="line-live-work-tzgs"></label>-->
+                                                    <!--</td>-->
+                                                    <!--<td align="right"><label>加班工时:<input type="number"-->
+                                                    <!--id="line-live-work-gbgs"-->
+                                                    <!--style="width: 40%"><select-->
+                                                    <!--style="border: 1px solid #ddd;border-radius: 4px;background: transparent;outline: none;height: 26px;"-->
+                                                    <!--id="line-live-work-gbbl">-->
+                                                    <!--<option value="1.5">1.5倍</option>-->
+                                                    <!--<option value="2">2.0倍</option>-->
+                                                    <!--<option value="3">3.0倍</option>-->
+                                                    <!--</select></label></td>-->
+                                                    <td align="right"><label>Current number:<input type="number"
                                                                                          id="line-live-work-ygrs"></label>
                                                     </td>
                                                     <td align="right"><label>Quantity invested:<input type="number"
                                                                                          id="line-live-work-trcl"></label>
                                                     </td>
-                                                </tr>
-                                                <tr>
+                                                    <td align="right"><label>Quantity of warehousing:<input type="number"
+                                                                                         id="line-live-work-rk"></label>
+                                                    </td>
                                                     <td align="right"><label>Production hours:<input type="number" readonly
                                                                                          id="line-live-work-scgs"></label>
                                                     </td>
                                                     <td align="right"></td>
                                                     <td align="right"></td>
-                                                    <td align="right"></label></td>
-                                                    <td align="right"></label></td>
                                                 </tr>
+                                                <!--<tr>-->
+                                                <!--<td align="right"><label>生产工时:<input type="number" readonly-->
+                                                <!--id="line-live-work-scgs"></label>-->
+                                                <!--</td>-->
+                                                <!--<td align="right"></td>-->
+                                                <!--<td align="right"></td>-->
+                                                <!--<td align="right"></label></td>-->
+                                                <!--<td align="right"></label></td>-->
+                                                <!--</tr>-->
                                                 <tr>
                                                     <td colspan="4" style="padding: 8px">
                                                         <table id="bootstrap-table" data-mobile-responsive="true"
@@ -169,7 +178,7 @@
                                                         <a class="btn btn-primary btn-sm " style="display: none"
                                                            id="action-btn-exce" href="javascript:void(0)"
                                                            onclick="addLineException()"
-                                                           shiro:hasPermission="device:devWorkOrder:add"> <i></i>Adding exception information</a><br/>
+                                                           shiro:hasPermission="device:devWorkOrder:add"> <i></i>Add exception</a><br/>
                                                     </td>
                                                 </tr>
                                                 </tbody>
@@ -325,7 +334,7 @@
                     sortable: true
                 },
                 {
-                    title: 'operation',
+                    title: 'Administration',
                     align: 'center',
                     formatter: function (value, row, index) {
                         var actions = [];
@@ -356,17 +365,17 @@
                 },
                 {
                     field: 'productionStart',
-                    title: 'Planning start time',
+                    title: 'productionStart',
                     sortable: true
                 },
                 {
                     field: 'startTime',
-                    title: 'Actual start time',
+                    title: 'startTime',
                     sortable: true
                 },
                 {
                     field: 'endTime',
-                    title: 'Actual end time',
+                    title: 'endTime',
                     sortable: true
                 }]
         };
@@ -377,7 +386,7 @@
             url: "/production/workExceptionList/list",
             createUrl: prefix1 + "/add",
             removeUrl: prefix1 + "/remove",
-            modalName: "Exception list",
+            modalName: "工单异常情况记录",
             search: false,
             showSearch:false,
             showExport: false,
@@ -395,11 +404,16 @@
                 },
                 {
                     field: 'devWorkOrder.workorderNumber',
-                    title: 'Work order number'
+                    title: 'workorderNumber'
                 },
                 {
                     field: 'workExceptionType.typeName',
-                    title: 'Exception type'
+                    title: 'typeName'
+                },
+                {
+                    field: 'remark',
+                    title: 'remark',
+                    sortable: true
                 },
                 {
                     field: 'handleContent',
@@ -412,17 +426,27 @@
                     sortable: true,
                     formatter: function (value, row, index) {
                         if (row.exceStatut == 0) {
-                            return '<span class="badge badge-warning">待处理</span>';
+                            return '<span class="badge badge-warning">Pending disposal</span>';
                         } else if (row.exceStatut == 1) {
-                            return '<span class="badge badge-primary">处理中</span>';
+                            return '<span class="badge badge-primary">In processing</span>';
                         } else if (row.exceStatut == 2) {
-                            return '<span class="badge badge-success">已解决</span>';
+                            return '<span class="badge badge-success">resolved</span>';
                         }
                     }
                 },
                 {
+                    field: 'createTime',
+                    title: 'createTime',
+                    sortable: true
+                },
+                {
                     field: 'handleUser',
                     title: 'handleUser',
+                    sortable: true
+                },
+                {
+                    field: 'handleTime',
+                    title: 'handleTime',
                     sortable: true
                 },
                 {
@@ -441,7 +465,7 @@
                     }
                 },
                 {
-                    title: 'exception handling',
+                    title: 'handle',
                     align: 'center',
                     formatter: function (value, row, index) {
                         if (row.exceStatut == 0) {
@@ -495,7 +519,7 @@
         if (o) {
             /** 未进行控制 只显示开始按钮 */
             if (o.workorderStatus == 0) {
-                $("#line-live-work-gdzt").text("Not started")//工单状态
+                $("#line-live-work-gdzt").text("未进行")//工单状态
                 $("#action-btn-start").css('display', 'inline-block');//开始按钮
                 $("#action-btn-end").css('display', 'none');//结束按钮
                 $("#action-btn-save").css('display', 'none');//刷新数据
@@ -515,7 +539,7 @@
                     $("#action-btn-end").css('display', 'inline-block');//结束按钮
                     $("#action-btn-save").css('display', 'inline-block');//刷新数据
                 }
-                $("#line-live-work-gdzt").text("starting");//工单状态
+                $("#line-live-work-gdzt").text("进行中");//工单状态
                 $("#action-btn-exce").css('display', 'inline-block');//添加异常信息
             } else if (o.workorderStatus == 2) {
                 $("#action-btn-start").css('display', 'none');
@@ -523,7 +547,7 @@
                 $("#action-btn-end").css('display', 'none');
                 $("#line-live-work-gdzt").text("Completed");
                 $("#action-btn-exce").css('display', 'inline-block');
-                $("#action-btn-submit").css('display', 'inline-block');
+                // $("#action-btn-submit").css('display', 'inline-block');
                 if(o.workSign == 0){
                     $("#action-btn-save").css('display', 'inline-block');//刷新数据
                 }else{
@@ -545,9 +569,6 @@
                 /** 控制操作按钮 */
                 controllerButtn(item);
                 if(s == 0){
-                    // if (item.ecnStatus == 1 && tag == 1) {
-                    //     $.modal.alertWarning(item.ecnText);
-                    // }
                     /** 进行数据填充 */
                     fillData(item,id);
                     searchYc(id);
@@ -563,22 +584,23 @@
         $("#line-live-work-num").val(item.productNumber);
         $("#line-live-work-product-code").val(item.productCode);
         $("#line-live-work-product-name").val(item.productName);
-        $("#line-live-work-stadard-hour").val(item.productStandardHour);
+        $("#line-live-work-stadard-hour").val(item.productStandardHour); // 标准产量
+        $("#line-live-work-uph").val(item.productUPH); // 产品UPH值
         $("#line-live-work-cumulative").val(item.cumulativeNumber);//累计产量
         $("#line-live-work-oldNum").val(item.cumulativeNumber);// 上次录入时数量
         $("#line-live-work-rk").val(item.actualWarehouseNum);//本次入库数量
         $("#line-live-work-bf").val(item.scrapNum);//报废数量
         $("#line-live-work-ztl").val(item.directPassRate == null?0:item.directPassRate);//直通率
         $("#line-live-work-dcl").val(item.reachRate);//工单达成率
-        $("#line-live-work-zcgs").val(item.workingHour);//正常工时
-        $("#line-live-work-tzgs").val(item.manualTime);//调整工时
-        $("#line-live-work-gbgs").val(item.overtimeHour);//加班工时
-        $("#line-live-work-gbbl").val(item.overtimeRace == null?1.5:item.overtimeRace)//加班倍率
+        // $("#line-live-work-zcgs").val(item.workingHour);//正常工时
+        // $("#line-live-work-tzgs").val(item.manualTime);//调整工时
+        // $("#line-live-work-gbgs").val(item.overtimeHour);//加班工时
+        // $("#line-live-work-gbbl").val(item.overtimeRace == null?1.5:item.overtimeRace)//加班倍率
         $("#line-live-work-ygrs").val(item.peopleNumber);//用工人数
         $("#line-live-work-trcl").val(item.putIntoNumber);//投入数量
         $("#line-live-work-scgs").val(item.signHuor.toFixed(2))//生产工时
         if(item.startTime){
-            $("#start-time").text("Actual start time:"+item.startTime);//时间开始时
+            $("#start-time").text("实际开始时间:"+item.startTime);//时间开始时
         }else{
             $("#start-time").text("");//时间开始时间
         }
@@ -589,42 +611,61 @@
      * @param id
      */
     function editStatus(id) {
-        if ($("#work-id").val() == 0 || $("#line-live-work-id").val() == "") {
-            $.modal.alertWarning("Please select the work order that needs to be operated on....");
-            return;
-        }
-        var msg1 = "Are you sure to start";
-        var msg2 = "Work orders have begun....";
-        if (id == 0) {
-            var msg1 = "Confirm the suspension";
-            var msg2 = "Work orders have been suspended...";
-        }
-        $.modal.confirm(msg1, function () {
-            $.modal.alertWarning(msg2);
-            $.ajax({
-                cache: true,
-                type: "POST",
-                dataType: 'json',
-                url: prefix + "/editWorkerOrderById", // 一点击开始，工单数据进行初始化
-                data: {
-                    "id": $("#work-id").val(),
-                },
-                async: false,
-                error: function (request) {
-                    $.modal.alertError("System error");
-                },
-                success: function (data) {
-                    if (data.code == 0) {
-                        //状态修改
-                        order( $("#work-id").val(),1,0);
-                        //查询工单列表数据
-                        searchWork();
-                    } else {
-                        $.modal.alertError(data.msg);
-                    }
+        // 校验考勤记录是否录入
+        $.post(ctx + "production/timeRecord/selectTimeRecord",{lineId:[[${line.id}]]},function (result) {
+            if (result.code == web_status.SUCCESS) {
+                if ($("#work-id").val() == 0 || $("#line-live-work-id").val() == "") {
+                    $.modal.alertWarning("Please select the work order to be operated...");
+                    return;
                 }
-            });
-        });
+                var peopleNumber = $("#line-live-work-ygrs").val();
+                if ($.common.isEmpty(peopleNumber) || peopleNumber <= 0) {
+                    $.modal.alertWarning("Please enter the number of employees in this work order");
+                    return;
+                }
+                var msg1 = "Are you sure to start";
+                var msg2 = "The work order has started...";
+                if (id == 0) {
+                    var msg1 = "Are you sure to suspend";
+                    var msg2 = "The work order has been suspended...";
+                }
+                $.modal.confirm(msg1, function () {
+                    $.modal.alertWarning(msg2);
+                    $.ajax({
+                        cache: true,
+                        type: "POST",
+                        dataType: 'json',
+                        url: prefix + "/editWorkerOrderById", // 一点击开始，工单数据进行初始化
+                        data: {
+                            "id": $("#work-id").val(),
+                        },
+                        async: false,
+                        error: function (request) {
+                            $.modal.alertError("System error");
+                        },
+                        success: function (data) {
+                            if (data.code == 0) {
+                                //状态修改
+                                order( $("#work-id").val(),1,0);
+                                //查询工单列表数据
+                                searchWork();
+                            } else {
+                                $.modal.alertError(data.msg);
+                            }
+                        }
+                    });
+                });
+            } else {
+                $.modal.confirm("Please confirm yesterday's attendance information first",function (res) {
+                    if (res) {
+                        var lineId =  [[${line.id}]];
+                        var url = ctx + "production/timeRecord/confirmTime?lineId=" + lineId;
+                        $.modal.open("Attendance record settings", url, 800, 400);
+                    }
+                })
+            }
+        })
+
     }
 
     /**
@@ -636,7 +677,7 @@
             $.modal.alertWarning("Please select the work order to be operated...");
             return;
         }
-        $.modal.confirm("Confirmation of termination of work order?", function () {
+        $.modal.confirm("Are you sure to end the work order？", function () {
             $.ajax({
                 type: 'POST',
                 url: prefix + '/finishWorkerOrder',
@@ -667,7 +708,12 @@
      */
     function save() {
         if ($("#work-id").val() == 0 || $("#line-live-work-id").val() == "") {
-            $.modal.alertWarning("Please select the work order that needs to be operated on.....");
+            $.modal.alertWarning("Please select the work order to be operated....");
+            return;
+        }
+        var peopleNumber = $("#line-live-work-ygrs").val();
+        if ($.common.isEmpty(peopleNumber) || peopleNumber <= 0) {
+            $.modal.alertWarning("Please enter the correct current number of people....");
             return;
         }
         var newNum = parseInt($("#line-live-work-cumulative").val());
@@ -679,17 +725,18 @@
         var data = {
             id: $("#work-id").val(),
             productNumber: $("#line-live-work-num").val(),//工单数量
-            productStandardHour: $("#line-live-work-stadard-hour").val(),//标准工时
+            // productStandardHour: $("#line-live-work-stadard-hour").val(),//标准工时
             oldInputNum:$("#line-live-work-oldNum").val(),// 上次产量
             cumulativeNumber: $("#line-live-work-cumulative").val(),//累计产量
             actualWarehouseNum: $("#line-live-work-rk").val(),//入库数量
             scrapNum: $("#line-live-work-bf").val(),//报废数量
             directPassRate: $("#line-live-work-ztl").val(),//直通率
-            workingHour: $("#line-live-work-zcgs").val(),//正常工时
-            manualTime: $("#line-live-work-tzgs").val(),//手动调整工时
-            overtimeHour: $("#line-live-work-gbgs").val(),//加班工时
-            overtimeRace: $("#line-live-work-gbbl").val(),//加班倍率
-            peopleNumber: $("#line-live-work-ygrs").val(),//用工人数
+            productUPH:$("#line-live-work-uph").val(),
+            // workingHour: $("#line-live-work-zcgs").val(),//正常工时
+            // manualTime: $("#line-live-work-tzgs").val(),//手动调整工时
+            // overtimeHour: $("#line-live-work-gbgs").val(),//加班工时
+            // overtimeRace: $("#line-live-work-gbbl").val(),//加班倍率
+            peopleNumber: peopleNumber,//用工人数
             putIntoNumber: $("#line-live-work-trcl").val(),//投入产量
         }
         var config = [];
@@ -704,7 +751,7 @@
                 $.modal.alertError("System error");
             },
             success: function (data) {
-                $.modal.msg("Save successfully, refreshing data, please wait a moment……", modal_status.SUCCESS);
+                $.modal.msg("Save succeeded, refreshing data please wait……", modal_status.SUCCESS);
                 order($("#work-id").val(),0,0);
             }
         });
@@ -712,10 +759,10 @@
     /** 提交数据 */
     function submitWorkOrder() {
         if ($("#work-id").val() == 0 || $("#line-live-work-id").val() == "") {
-            $.modal.alertWarning("Please select the work order that needs to be operated on.....");
+            $.modal.alertWarning("Please select the work order to be operated....");
             return;
         }
-        $.modal.confirm("Confirmation of submission of work order？", function () {
+        $.modal.confirm("Are you sure to submit the work order？", function () {
             save();
             $.ajax({
                 type: 'POST',
@@ -761,11 +808,11 @@
      */
     function addLineException() {
         if ($("#work-id").val() == 0 || $("#line-live-work-id").val() == "") {
-            $.modal.alertWarning("Please select the work order that needs to be operated on...");
+            $.modal.alertWarning("Please select the work order to be operated....");
             return;
         }
         var url = "/production/workExceptionList/add2?lineId=" + data.lineId + "&workId=" + $("#work-id").val();
-        $.modal.open("Adding Work Order Exceptions", url, 800, 300);
+        $.modal.open("Add work order exception", url, 800, 300);
     }
 
     /**
@@ -785,6 +832,16 @@
         var url = prefix1 + "/handleExcp/" + id;
         $.modal.open("Exception handling description", url, 800, 520);
     }
+
+    /**
+     * 查看考勤记录
+     */
+    function showTimeRecord() {
+        var lineId =  [[${line.id}]];
+        var url = ctx + "production/timeRecord?lineId=" + lineId;
+        $.modal.open("Attendance record settings", url, 800, 400);
+    }
+
 </script>
 <div class="wrapper wrapper-content animated fadeInRight ibox-content" style="display: none" id="add-work-exception">
     <form class="form-horizontal m" id="form-workExceptionList-add">
@@ -794,7 +851,7 @@
                 <input name="workId" id="work-id2" value="0" class="form-control" type="hidden">
                 <select id="exceType" name="exceType" class="form-control"
                         th:with="exceTypeAll=${@exceType.findExceTypeAll(#httpServletRequest.getCookies())}">
-                    <option value="">Selection exception</option>
+                    <option value="">Please choose</option>
                     <option th:each="exceType : ${exceTypeAll}" th:text="${exceType.typeName}"
                             th:value="${exceType.Id}">
                     </option>

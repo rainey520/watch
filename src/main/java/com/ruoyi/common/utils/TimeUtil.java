@@ -4,7 +4,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
-import java.util.UUID;
 
 public class TimeUtil {
     /***
@@ -81,6 +80,12 @@ public class TimeUtil {
         }
     }
 
+    /**
+     * 计算开始结束时间小时差值数
+     * @param startDate 开始日期
+     * @param endDate 结束日期
+     * @return 结果
+     */
     public static float getDateDel(Date startDate, Date endDate) {
         long nd = 1000 * 24 * 60 * 60;
         long nh = 1000 * 60 * 60;
@@ -89,8 +94,9 @@ public class TimeUtil {
         long day = diff / nd;
         long hour = diff % nd / nh;
         long min = diff % nd % nh / nm;
+        float t = (float) day * 24;
         float m = (float) min / 60;
-        return hour + m;
+        return t + hour + m;
     }
 
     /**
@@ -133,7 +139,7 @@ public class TimeUtil {
         cal.get(Calendar.DAY_OF_MONTH);
         cal.get(Calendar.MONTH);
         cal.get(Calendar.YEAR);
-        cal.set(Calendar.HOUR_OF_DAY,0);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
         cal.set(Calendar.MINUTE, 0); //设置分钟为0,
         cal.set(Calendar.SECOND, 0); // 秒钟为0
         cal.set(Calendar.MILLISECOND, 0); //毫秒值为0
@@ -141,9 +147,12 @@ public class TimeUtil {
     }
 
     public static void main(String[] args) throws Exception {
-        Long a = 1375741824L;
-        System.out.println(a.doubleValue());
-        System.out.println(String.format("%.2f",a.doubleValue()/(1024*1024*1024)));
+        String startTime = "2018-10-20 08:30:00";
+        String endTime = "2019-10-25 08:45:00";
+        Date dateTime = DateUtils.dateTime("yyyy-MM-dd HH:mm:ss", startTime);
+        Date date = DateUtils.dateTime("yyyy-MM-dd HH:mm:ss", endTime);
+        float dateDel = getDateDel(dateTime, date);
+        System.out.println(dateDel);
     }
 
 

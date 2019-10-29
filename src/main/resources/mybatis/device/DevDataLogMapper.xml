@@ -77,7 +77,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <!--查询当天正在生产或者已经生产完成当前系统时间与前一个小时的io口数据记录-->
     <select id="selectDataLogBeInOrFinish" resultType="com.ruoyi.project.device.devDeviceCounts.domain.DataLogTask">
          SELECT hour(create_time)as timeHour,create_date as createDate, COALESCE(sum(del_data),0) as sumData FROM dev_data_log
-        where dev_id = #{devId} and io_id = #{ioId} and work_id = #{workId} and line_id = #{lineId} and sc_type = #{scType}
+        where dev_id = #{devId}
+        <if test="ioId != null">
+            and io_id = #{ioId}
+        </if>
+        and work_id = #{workId} and line_id = #{lineId} and sc_type = #{scType}
         and create_time BETWEEN #{sysDateTimeOld} AND #{sysDateTime} group by timeHour,createDate;
     </select>
 
@@ -89,7 +93,10 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <!--查询对应产线工单硬件IO口上传回传的数据-->
     <select id="selectLineWorkDevIo" resultMap="DevDataLogResult">
         SELECT * FROM dev_data_log where line_id = #{line_id} and work_id = #{work_id} and dev_id =  #{dev_id}
-         and io_id = #{io_id} and sc_type = #{scType} order by create_time desc limit 1
+        <if test="io_id != null and io_id > 0">
+            and io_id = #{io_id}
+        </if>
+        and sc_type = #{scType} order by create_time desc limit 1
     </select>
 
     <!--实时统计当前小时的工位产量-->

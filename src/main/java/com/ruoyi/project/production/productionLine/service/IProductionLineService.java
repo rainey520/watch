@@ -110,4 +110,11 @@ public interface IProductionLineService
 	 * @return
 	 */
 	List<ProductionLine> selectAllProductionLineByCompanyId(Cookie[] cookies);
+
+	/**
+	 * 更新产线自动采集状态
+	 * @param line 产线信息
+	 * @return 结果
+	 */
+    int changeStatus(ProductionLine line);
 }

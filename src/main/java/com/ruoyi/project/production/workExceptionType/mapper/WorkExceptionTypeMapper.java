@@ -84,4 +84,11 @@ public interface WorkExceptionTypeMapper
 	 * @return
 	 */
 	WorkExceptionType selectByCompanyAndTypeName(@Param("company_id") int company_id, @Param("type_name") String tname);
+
+	/**
+	 * 通过公司id查询异常类型列表
+	 * @param companyId 公司id
+	 * @return 结果
+	 */
+	List<WorkExceptionType> selectWorkExcTypeListByComId(@Param("companyId") Integer companyId);
 }

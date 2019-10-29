@@ -1,11 +1,13 @@
 package com.ruoyi.project.app.controller;
 
+import com.ruoyi.common.exception.BusinessException;
 import com.ruoyi.common.exception.base.BaseException;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.framework.shiro.service.LoginService;
 import com.ruoyi.framework.web.controller.BaseController;
 import com.ruoyi.framework.web.domain.AjaxResult;
 import com.ruoyi.project.app.domain.Index;
+import com.ruoyi.project.app.domain.LineData;
 import com.ruoyi.project.app.service.IInitService;
 import com.ruoyi.project.system.user.domain.User;
 import org.apache.shiro.authc.AuthenticationException;
@@ -14,6 +16,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/app")
@@ -73,5 +77,26 @@ public class InitController extends BaseController {
     @RequestMapping("/getWorkCode")
     public AjaxResult getWorkCode(){
         return AjaxResult.success(iInitService.getWorkCode());
+    }
+
+
+    /**
+     * 获取计数器硬件编码信息
+     */
+    @RequestMapping("/getDevJsCode")
+    public AjaxResult getDevJsCode(){
+        try {
+            return AjaxResult.success(iInitService.getDevJsCode());
+        } catch (BusinessException e) {
+            return AjaxResult.error(e.getMessage());
+        }
+    }
+
+    /**
+     * 计数器接口校验
+     */
+    @RequestMapping("/checkJsCode")
+    public Map<String,Object> checkJsCode(@RequestBody LineData lineData){
+        return iInitService.checkJsCode(lineData);
     }
 }

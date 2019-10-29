@@ -19,8 +19,10 @@ import com.ruoyi.common.utils.CodeUtils;
 import com.ruoyi.common.utils.ServletUtils;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.TimeUtil;
+import com.ruoyi.common.utils.poi.PdfUtil;
 import com.ruoyi.framework.config.RuoYiConfig;
 import com.ruoyi.framework.jwt.JwtUtil;
+import com.ruoyi.project.app.domain.Index;
 import com.ruoyi.project.device.devCompany.domain.DevCompany;
 import com.ruoyi.project.device.devCompany.mapper.DevCompanyMapper;
 import com.ruoyi.project.product.importConfig.domain.ImportConfig;
@@ -41,6 +43,10 @@ import com.ruoyi.project.production.singleWork.domain.SingleWork;
 import com.ruoyi.project.production.singleWork.domain.SingleWorkOrder;
 import com.ruoyi.project.production.singleWork.mapper.SingleWorkMapper;
 import com.ruoyi.project.production.singleWork.mapper.SingleWorkOrderMapper;
+import com.ruoyi.project.production.workExceptionList.domain.WorkExceptionList;
+import com.ruoyi.project.production.workExceptionList.mapper.WorkExceptionListMapper;
+import com.ruoyi.project.production.workExceptionType.domain.WorkExceptionType;
+import com.ruoyi.project.production.workExceptionType.mapper.WorkExceptionTypeMapper;
 import com.ruoyi.project.production.workOrderChange.domain.WorkOrderChange;
 import com.ruoyi.project.production.workOrderChange.mapper.WorkOrderChangeMapper;
 import com.ruoyi.project.production.workstation.mapper.WorkstationMapper;
@@ -101,9 +107,6 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
     private DevProductListMapper productListMapper; // 产品
 
     @Autowired
-    private WorkOrderChangeMapper orderChangeMapper;
-
-    @Autowired
     private EcnLogMapper ecnLogMapper;
 
     @Autowired
@@ -135,6 +138,12 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
 
     @Autowired
     private WorkLogMapper workLogMapper;
+
+    @Autowired
+    private WorkExceptionTypeMapper exceptionTypeMapper;
+
+    @Autowired
+    private WorkExceptionListMapper workExcMapper;
 
     @Value("${file.iso}")
     private String fileUrl;
@@ -257,6 +266,13 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
         if (workOrder == null) {
             throw new BusinessException("工单不存在或已经删除");
         }
+        // 查询工单生产的产品信息
+        DevProductList product = productListMapper.selectDevProductByCode(u.getCompanyId(), workOrder.getProductCode());
+        if (product == null ) {
+            throw new BusinessException("工单生产的产品不存在或被删除");
+        }
+        devWorkOrder.setProductStandardHour(product.getStandardHourYield() * devWorkOrder.getPeopleNumber());
+        devWorkOrder.setProductUPH(product.getStandardHourYield());
         if (workOrder.getWorkSign().equals(WorkConstants.WORK_SIGN_YES)) {
             throw new BusinessException("已经提交数据的工单不能进行修改");
         }
@@ -277,7 +293,7 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
         }
         // 消息推送生产看板
         JPushWatchMsg(company);
-        JPushMsg(workOrder);
+        // JPushMsg(workOrder);
         if (StringUtils.isNotNull(devWorkOrder.getCumulativeNumber()) && devWorkOrder.getCumulativeNumber() > devWorkOrder.getOldInputNum()) {
             // 新增拉长操作记录
             WorkLog workLog = new WorkLog();
@@ -353,13 +369,8 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public int editWorkerOrderById(Integer id, Integer uid) {
-        User user = null;
-        if (uid == null) {
-            user = JwtUtil.getTokenUser(ServletUtils.getRequest());
-        } else {
-            user = userMapper.selectUserInfoById(uid);
-        }
+    public int editWorkerOrderById(Integer id) {
+        User user = JwtUtil.getUser();
         if (user == null) {
             throw new BusinessException(UserConstants.NOT_LOGIN);
         }
@@ -369,8 +380,10 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
             throw new BusinessException("公司信息不存在或被删除");
         }
         DevWorkOrder devWorkOrder = devWorkOrderMapper.selectDevWorkOrderById(id);
-
         ProductionLine productionLine = productionLineMapper.selectProductionLineById(devWorkOrder.getLineId());
+        if (productionLine == null) {
+            throw new BusinessException("产线不存在或被删除");
+        }
         // 不是工单负责人
         if (productionLine.getDeviceLiable() != user.getUserId().intValue() && productionLine.getDeviceLiableTow() != user.getUserId().intValue()) {
             throw new BusinessException("不是工单负责人");
@@ -388,8 +401,6 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
             if (devWorkOrder.getOperationStatus().equals(WorkConstants.OPERATION_STATUS_STARTING)) {
                 devWorkOrder.setOperationStatus(WorkConstants.OPERATION_STATUS_PAUSE);
                 devWorkOrder.setUpdateBy(user.getUserName());
-                //将其工单对应的数据需要重新记录初始值
-                devWorkDataMapper.updateWorkSigInit(devWorkOrder.getId());
                 //计数时间
                 devWorkOrder.setSignHuor(devWorkOrder.getSignHuor() + TimeUtil.getDateDel(devWorkOrder.getSignTime(), new Date()));
 
@@ -412,10 +423,12 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
                 //标记用时
                 devWorkOrder.setSignHuor(0F);
             }
+
             // 推送ASOP
             JPushMsg(devWorkOrder);
             // 推送生产看板
             JPushWatchMsg(company);
+
             // 修改工单的状态为进行中
             devWorkOrder.setWorkorderStatus(WorkConstants.WORK_STATUS_STARTING);
             // 修改工单的操作状态为正在进行，页面显示暂停按钮
@@ -425,6 +438,7 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
         }
         return devWorkOrderMapper.updateDevWorkOrder(devWorkOrder);
     }
+
 
     /**
      * 校验流水线是否只有一个处于生产状态的工单
@@ -607,6 +621,17 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
         if (order == null || order.getLineId() == null) {
             return null;
         }
+        // 查询工单生产的产品信息
+        DevProductList product = productListMapper.selectDevProductByCode(user.getCompanyId(), order.getProductCode());
+        if (product == null ) {
+            return null;
+        }
+        order.setProductStandardHour(PdfUtil.IntegerNull(product.getStandardHourYield()) * order.getPeopleNumber());
+        order.setProductUPH(product.getStandardHourYield());
+        DevCompany company = companyMapper.selectDevCompanyById(user.getCompanyId());
+        if (company == null) {
+            return null;
+        }
         //查询对应的产线信息
         ProductionLine line = productionLineMapper.selectProductionLineById(order.getLineId());
         if (line == null) return null;
@@ -618,7 +643,6 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
             order.setLineSign(lineSign);
             order.setParam1(line.getLineName());
         }
-        //判断产线是否是手动
         float standardHour = order.getSignHuor();
         //达成率默认为0
         order.setReachRate(0.0F);
@@ -721,7 +745,7 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
         change.setCreatePeople(user.getUserName());
         change.setCreateTime(new Date());
         change.setRemark(order.getRemark());
-        orderChangeMapper.insertWorkOrderChange(change);
+        workOrderChangeMapper.insertWorkOrderChange(change);
         return devWorkOrderMapper.updateDevWorkOrder(order);
     }
 
@@ -1398,6 +1422,7 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
 
     /**
      * 推送生产看板
+     *
      * @param company
      */
     private void JPushWatchMsg(DevCompany company) {
@@ -1424,6 +1449,7 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
 
     /**
      * 推送ASOP
+     *
      * @param order
      */
     private void JPushMsg(DevWorkOrder order) {
@@ -1671,5 +1697,56 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
         }
         workOrder.setLineSign(lineSign);
         return workOrder;
+    }
+
+    /**
+     * app上报工单异常信息
+     *
+     * @param index 异常信息
+     * @return 结果
+     */
+    @Override
+    public Map<String, Object> appWorkExc(Index index) {
+        Map<String, Object> map = new HashMap<>(16);
+        try {
+            User user = JwtUtil.getUser();
+            if (user == null) {
+                map.put("msg", "用户未登录或登录超时");
+                map.put("code", 0);
+                return map;
+            }
+            if (index == null || index.getWorkId() == null || StringUtils.isEmpty(index.getWorkExcTypeName()) || StringUtils.isEmpty(index.getWorkExcInfo())) {
+                map.put("msg", "上报参数错误");
+                map.put("code", 0);
+                return map;
+            }
+            // 查询对应异常类型是否存在
+            WorkExceptionType exceptionType = exceptionTypeMapper.selectByCompanyAndTypeName(user.getCompanyId(), index.getWorkExcTypeName());
+            if (exceptionType == null) {
+                exceptionType = new WorkExceptionType();
+                exceptionType.setCompanyId(user.getCompanyId());
+                exceptionType.setTypeName(index.getWorkExcTypeName());
+                exceptionType.setDefId(0);
+                exceptionType.setCreateTime(new Date());
+                exceptionTypeMapper.insertWorkExceptionType(exceptionType);
+            }
+            // 绑定工单异常记录
+            WorkExceptionList exceptionList = new WorkExceptionList();
+            exceptionList.setCompanyId(user.getCompanyId());
+            exceptionList.setExceStatut(0);
+            exceptionList.setExceType(exceptionType.getId());
+            exceptionList.setWorkId(index.getWorkId());
+            exceptionList.setRemark(index.getWorkExcInfo());
+            exceptionList.setCreateTime(new Date());
+            workExcMapper.insertWorkExceptionList(exceptionList);
+            map.put("msg", "工单异常上报成功");
+            map.put("code", 1);
+            return map;
+
+        } catch (Exception e) {
+        }
+        map.put("msg", "上报失败");
+        map.put("code", 0);
+        return map;
     }
 }

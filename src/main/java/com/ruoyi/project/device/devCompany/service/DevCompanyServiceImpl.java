@@ -3,6 +3,7 @@ package com.ruoyi.project.device.devCompany.service;
 import com.ruoyi.common.constant.CompanyConstants;
 import com.ruoyi.common.support.Convert;
 import com.ruoyi.common.utils.StringUtils;
+import com.ruoyi.framework.jwt.JwtUtil;
 import com.ruoyi.project.device.devCompany.domain.DevCompany;
 import com.ruoyi.project.device.devCompany.mapper.DevCompanyMapper;
 import com.ruoyi.project.system.user.domain.User;
@@ -158,7 +159,11 @@ public class DevCompanyServiceImpl implements IDevCompanyService {
         DevCompany company = devCompanyMapper.selectDevCompanyById(id);
         if (company == null)
             return 0;
-        company.setSign(1);
+        if (company.getSign() == 0) {
+            company.setSign(1);
+        } else {
+            company.setSign(0);
+        }
         devCompanyMapper.updateDevCompany(company);
         return 1;
     }
@@ -179,5 +184,14 @@ public class DevCompanyServiceImpl implements IDevCompanyService {
             return CompanyConstants.COM_LOGIN_NUM_NOT_UNIQUE;
         }
         return CompanyConstants.COM_LOGIN_NUM_UNIQUE;
+    }
+
+    @Override
+    public DevCompany selectCompanyInfoByComId() {
+        User user = JwtUtil.getUser();
+        if (user == null) {
+            return null;
+        }
+        return devCompanyMapper.selectDevCompanyById(user.getCompanyId());
     }
 }

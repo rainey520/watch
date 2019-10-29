@@ -6,11 +6,14 @@ import com.ruoyi.common.utils.CodeUtils;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.TimeUtil;
 import com.ruoyi.framework.jwt.JwtUtil;
+import com.ruoyi.project.app.domain.Index;
 import com.ruoyi.project.app.domain.WatchDetail;
 import com.ruoyi.project.app.domain.WatchInfo;
 import com.ruoyi.project.app.service.IWatchService;
 import com.ruoyi.project.device.devCompany.domain.DevCompany;
 import com.ruoyi.project.device.devCompany.mapper.DevCompanyMapper;
+import com.ruoyi.project.device.devList.domain.DevList;
+import com.ruoyi.project.device.devList.mapper.DevListMapper;
 import com.ruoyi.project.page.pageInfo.domain.PageTem;
 import com.ruoyi.project.production.devWorkOrder.domain.DevWorkOrder;
 import com.ruoyi.project.production.devWorkOrder.domain.WorkLog;
@@ -20,6 +23,10 @@ import com.ruoyi.project.production.productionLine.domain.ProductionLine;
 import com.ruoyi.project.production.productionLine.mapper.ProductionLineMapper;
 import com.ruoyi.project.production.workExceptionList.domain.WorkExceptionList;
 import com.ruoyi.project.production.workExceptionList.mapper.WorkExceptionListMapper;
+import com.ruoyi.project.production.workExceptionType.domain.WorkExceptionType;
+import com.ruoyi.project.production.workExceptionType.mapper.WorkExceptionTypeMapper;
+import com.ruoyi.project.production.workstation.domain.Workstation;
+import com.ruoyi.project.production.workstation.mapper.WorkstationMapper;
 import com.ruoyi.project.system.config.domain.JpushInfo;
 import com.ruoyi.project.system.config.mapper.JpushInfoMapper;
 import com.ruoyi.project.system.user.domain.User;
@@ -51,6 +58,9 @@ public class WatchServiceImpl implements IWatchService {
     private ProductionLineMapper lineMapper;
 
     @Autowired
+    private WorkstationMapper workstationMapper;
+
+    @Autowired
     private DevWorkOrderMapper workOrderMapper;
 
     @Autowired
@@ -60,6 +70,9 @@ public class WatchServiceImpl implements IWatchService {
     private WorkExceptionListMapper workExcMapper;
 
     @Autowired
+    private WorkExceptionTypeMapper exceptionTypeMapper;
+
+    @Autowired
     private DevCompanyMapper companyMapper;
 
     @Autowired
@@ -67,6 +80,9 @@ public class WatchServiceImpl implements IWatchService {
 
     @Autowired
     private JpushInfoMapper jpushInfoMapper;
+
+    @Autowired
+    private DevListMapper devListMapper;
 
     /**
      * 拉取看板信息
@@ -235,7 +251,7 @@ public class WatchServiceImpl implements IWatchService {
                     // 生成时间戳
                     String firstTime = CodeUtils.getCode();
                     // 查询对应账号，对应时间戳是否存在
-                    JpushInfo jpushInfo = jpushInfoMapper.selectJPushInfoByFirstTime(watchInfo.getLoginNumber().toUpperCase(),firstTime);
+                    JpushInfo jpushInfo = jpushInfoMapper.selectJPushInfoByFirstTime(watchInfo.getLoginNumber().toUpperCase(), firstTime);
                     if (jpushInfo != null) {
                         map.put("code", 0);
                         map.put("msg", "登陆失败，请重新登陆");
@@ -252,7 +268,7 @@ public class WatchServiceImpl implements IWatchService {
 
                 } else {
                     // 查询对应时间戳是否存在
-                    JpushInfo jpushInfo = jpushInfoMapper.selectJPushInfoByFirstTime(watchInfo.getLoginNumber().toUpperCase(),watchInfo.getFirstTime());
+                    JpushInfo jpushInfo = jpushInfoMapper.selectJPushInfoByFirstTime(watchInfo.getLoginNumber().toUpperCase(), watchInfo.getFirstTime());
                     if (jpushInfo == null) {
                         // 新增
                         jpushInfo = new JpushInfo();
@@ -283,6 +299,77 @@ public class WatchServiceImpl implements IWatchService {
         }
         map.put("code", 0);
         map.put("msg", "操作失败");
+        return map;
+    }
+
+    /**
+     * 异常上报
+     *
+     * @param index 上报信息
+     * @return 结果
+     */
+    @Override
+    public Map<String, Object> workExc(Index index) {
+        Map<String, Object> map = new HashMap<>(16);
+        try {
+            if (index != null && StringUtils.isNotEmpty(index.getWatchCode())) {
+                // 查询硬件信息
+                DevList devList = devListMapper.selectDevListByCode(index.getWatchCode());
+                if (devList == null || devList.getCompanyId() == null) {
+                    map.put("msg","看板编码不存在或未归属公司");
+                    map.put("code",0);
+                    return map;
+                }
+                // 查询工位信息
+                Workstation workstation = workstationMapper.selectInfoByDevice(0, devList.getId(), 0);
+                if (workstation == null) {
+                    map.put("msg","工位不存在或被删除");
+                    map.put("code",0);
+                    return map;
+                }
+                // 查询产线信息
+                ProductionLine line = lineMapper.selectProductionLineById(workstation.getLineId());
+                if (line == null) {
+                    map.put("msg","产线不存在或被删除");
+                    map.put("code",0);
+                    return map;
+                }
+                // 查询正在进行的工单信息
+                DevWorkOrder workOrder = workOrderMapper.selectWorkByCompandAndLine(devList.getCompanyId(), line.getId(), WorkConstants.SING_LINE);
+                if (workOrder == null) {
+                    map.put("msg","没有正在进行的工单信息");
+                    map.put("code",0);
+                    return map;
+                }
+                // 查询对应异常类型是否存在
+                WorkExceptionType exceptionType = exceptionTypeMapper.selectByCompanyAndTypeName(devList.getCompanyId(), "异常上报");
+                if (exceptionType == null) {
+                    exceptionType = new WorkExceptionType();
+                    exceptionType.setCompanyId(devList.getCompanyId());
+                    exceptionType.setTypeName("异常上报");
+                    exceptionType.setDefId(0);
+                    exceptionType.setCreateTime(new Date());
+                    exceptionTypeMapper.insertWorkExceptionType(exceptionType);
+                }
+                // 绑定工单异常记录
+                WorkExceptionList exceptionList = new WorkExceptionList();
+                exceptionList.setCompanyId(devList.getCompanyId());
+                exceptionList.setExceStatut(0);
+                exceptionList.setExceType(exceptionType.getId());
+                exceptionList.setWorkId(workOrder.getId());
+                exceptionList.setRemark("工位:" + workstation.getwName() + ",看板编码：" + index.getWatchCode() + ",上报异常");
+                exceptionList.setCreateTime(new Date());
+                workExcMapper.insertWorkExceptionList(exceptionList);
+                map.put("msg","上报成功");
+                map.put("code", 1);
+                return map;
+
+            }
+        } catch (Exception e) {
+
+        }
+        map.put("msg", "上报失败");
+        map.put("code", 0);
         return map;
     }
 }

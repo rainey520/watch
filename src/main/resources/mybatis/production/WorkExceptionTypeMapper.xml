@@ -85,5 +85,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <select id="selectByCompanyAndTypeName" resultMap="WorkExceptionTypeResult">
         SELECT * FROM dev_work_exception_type where company_id = #{company_id} and type_name = #{type_name} and def_id = 0 limit 1;
     </select>
+
+    <select id="selectWorkExcTypeListByComId" resultMap="WorkExceptionTypeResult">
+         SELECT * FROM dev_work_exception_type where company_id = #{companyId}
+    </select>
     
 </mapper>

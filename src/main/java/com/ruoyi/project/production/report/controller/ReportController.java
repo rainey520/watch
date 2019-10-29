@@ -8,6 +8,8 @@ import com.ruoyi.framework.config.RuoYiConfig;
 import com.ruoyi.framework.jwt.JwtUtil;
 import com.ruoyi.framework.web.controller.BaseController;
 import com.ruoyi.framework.web.domain.AjaxResult;
+import com.ruoyi.project.device.devCompany.domain.DevCompany;
+import com.ruoyi.project.device.devCompany.service.IDevCompanyService;
 import com.ruoyi.project.product.list.service.IDevProductListService;
 import com.ruoyi.project.production.productionLine.service.IProductionLineService;
 import com.ruoyi.project.production.report.domain.AppReport;
@@ -21,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
@@ -42,6 +45,9 @@ public class ReportController extends BaseController {
 
     @Autowired
     private IReportService reportService;
+
+    @Autowired
+    private IDevCompanyService companyService;
 
 
     @RequestMapping("/download")
@@ -100,8 +106,14 @@ public class ReportController extends BaseController {
      */
     @GetMapping
     @RequiresPermissions("production:report:view")
-    public String report() {
+    public String report(ModelMap map) {
         User user = JwtUtil.getUser();
+        map.put("vipSign",0);
+        // 查询公司的会员信息
+        DevCompany company = companyService.selectDevCompanyById(user.getCompanyId());
+        if (company != null) {
+            map.put("vipSign",company.getSign());
+        }
         if (UserConstants.LANGUAGE_EN.equals(user.getLangVersion())) {
             return prefix + "/reportEn";
         }

@@ -1,5 +1,6 @@
 package com.ruoyi.project.app.service;
 
+import com.ruoyi.project.app.domain.Index;
 import com.ruoyi.project.app.domain.WatchInfo;
 
 import java.util.Map;
@@ -25,4 +26,11 @@ public interface IWatchService {
      * @return 结果
      */
     Map<String, Object> watchLogin(WatchInfo watchInfo);
+
+    /**
+     * 异常上报
+     * @param index 上报信息
+     * @return 结果
+     */
+    Map<String, Object> workExc(Index index);
 }

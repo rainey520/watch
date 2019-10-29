@@ -13,7 +13,7 @@ import java.util.List;
  * @author sj
  * @date 2019-06-13
  */
-public interface WorkstationMapper 
+public interface WorkstationMapper
 {
 	/**
      * 查询工位配置信息
@@ -170,4 +170,6 @@ public interface WorkstationMapper
 	 * @return
 	 */
 	List<Workstation> selectAllCodeNotNullByLineId(@Param("companyId")int companyId,@Param("lineId")int lineId);
+
+
 }

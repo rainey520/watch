@@ -130,6 +130,14 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         where id = #{id}
     </update>
 
+    <update id="updateLineStatus" parameterType="ProductionLine">
+        update dev_production_line
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="manual != null  ">manual = #{manual},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
 	<update id="deleteProductionLineById" parameterType="Integer">
         update  dev_production_line set def_id =1 where id = #{id}
     </update>

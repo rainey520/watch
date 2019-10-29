@@ -36,7 +36,6 @@ public interface DevDataLogMapper {
      * @param devDataLog 数据上报日志信息
      * @return 结果
      */
-//    @DataSource(value = DataSourceType.SLAVE)
     public int insertDevDataLog(DevDataLog devDataLog);
 
     /**
@@ -74,13 +73,12 @@ public interface DevDataLogMapper {
      * @param line_id 查询
      * @param work_id 工单
      * @param dev_id  硬件编号
-     * @param io_id   IO口编号
+     * @param io_id   工位id
      * @param scType 流水线或者车间标记
      * @return
      */
-//    @DataSource(DataSourceType.SLAVE)
     DevDataLog selectLineWorkDevIo(@Param("line_id") int line_id, @Param("work_id") int work_id, @Param("dev_id") int dev_id,
-                                   @Param("io_id") int io_id,@Param("scType") int scType);
+                                   @Param("io_id") Integer io_id,@Param("scType") int scType);
 
     /**
      * 实时统计当前小时的工位产量

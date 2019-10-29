@@ -254,6 +254,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="makeType != null  ">make_type =#{makeType},</if>
             <if test="workPrice != null  ">work_price =#{workPrice},</if>
             <if test="pbSign != null  ">pb_sign =#{pbSign},</if>
+            <if test="sign != null  ">sign =#{sign},</if>
             update_time = sysdate()
         </trim>
         where id = #{id}
@@ -340,7 +341,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <!--查询昨天所有的排单-->
     <select id="selectWorkOrderAllYesterday" parameterType="Integer" resultMap="DevWorkOrderResult">
         <include refid="selectDevWorkOrderVo"/>
-        where company_id= #{companyId} and date(production_end) = date_sub(curdate(),interval 1 day);
+        where company_id= #{companyId} and line_id = #{lineId} and date(update_time) = date_sub(curdate(),interval 1 day);
     </select>
 
     <!--查询当天所有正在生产的工单或者已经结束的工单-->
@@ -458,7 +459,28 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         select workorder_number,line_id,product_code,product_name,product_number,start_time,end_time,make_type from dev_work_order where workorder_number = #{workCode} limit 1;
     </select>
 
-    <select id="appSelectWorkListTwo" resultMap="DevWorkOrderResult">
+    <select id="selectWorkListByDayTime" parameterType="com.ruoyi.project.production.report.domain.ComCost" resultType="com.ruoyi.project.production.report.domain.CostItem">
+        SELECT DATE_FORMAT(end_time, "%Y-%m-%d") as dayTime
+        FROM dev_work_order where company_id = #{companyId} and work_sign = 1
+        <if test="lineId > 0">
+            and line_id = #{lineId}
+        </if>
+        <if test="productCode != null and productCode != ''">
+            and product_code = #{productCode}
+        </if>
+        and end_time between #{startTime} and #{endTime}
+        GROUP BY DATE_FORMAT(end_time, "%Y-%m-%d") order by dayTime asc
+    </select>
 
+    <!--查看检索事件段的产线列表-->
+    <select id="selectWorkLineInfo" parameterType="com.ruoyi.project.production.report.domain.ComCost" resultType="com.ruoyi.project.production.report.domain.ComCost">
+        SELECT line_id as lineId FROM dev_work_order  where company_id = #{companyId} and work_sign = 1
+        <if test="lineId > 0">
+            and line_id = #{lineId}
+        </if>
+        <if test="productCode != null and productCode != ''">
+            and product_code = #{productCode}
+        </if>
+         and end_time between #{startTime} and #{endTime} group by line_id;
     </select>
 </mapper>

@@ -11,6 +11,7 @@ import com.ruoyi.framework.jwt.JwtUtil;
 import com.ruoyi.framework.web.controller.BaseController;
 import com.ruoyi.framework.web.domain.AjaxResult;
 import com.ruoyi.framework.web.page.TableDataInfo;
+import com.ruoyi.project.device.devCompany.service.IDevCompanyService;
 import com.ruoyi.project.production.devWorkOrder.domain.DevWorkOrder;
 import com.ruoyi.project.production.devWorkOrder.service.IDevWorkOrderService;
 import com.ruoyi.project.production.productionLine.domain.ProductionLine;
@@ -240,6 +241,23 @@ public class ProductionLineController extends BaseController {
         return productionLineService.checkLineNameUnique(productionLine);
     }
 
+    /**
+     * 产线自动采集状态更新
+     */
+    @PostMapping("/changeStatus")
+    @ResponseBody
+    public AjaxResult changeStatus(ProductionLine line){
+        return toAjax(productionLineService.changeStatus(line));
+    }
+
+    /**
+     * 查看硬件信息
+     */
+    @GetMapping("/showHardware")
+    public String showHardware(){
+        return prefix + "/hardware";
+    }
+
 
     /******************************************************************************************************
      *********************************** app流水线交互逻辑 *************************************************
@@ -252,6 +270,9 @@ public class ProductionLineController extends BaseController {
 
     @Autowired
     private IDevWorkOrderService workOrderService;
+
+    @Autowired
+    private IDevCompanyService companyService;
 
     /**
      * app端查询流水线信息
@@ -271,6 +292,7 @@ public class ProductionLineController extends BaseController {
                     List<Menu> menuApiList = menuService.selectMenuListByParentIdAndUserId(user.getUserId().intValue(), productionLine.getmParentId());
                     map.put("menuList", menuApiList);
                 }
+                map.put("vipSign",companyService.selectDevCompanyById(user.getCompanyId()).getSign());
                 map.put("lineList", productionLineService.appSelectLineList(productionLine));
                 return AjaxResult.success("请求成功", map);
             }

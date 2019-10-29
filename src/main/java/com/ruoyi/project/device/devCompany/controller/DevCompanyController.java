@@ -237,4 +237,19 @@ public class DevCompanyController extends BaseController {
             return error(e.getMessage());
         }
     }
+
+    /**
+     * 查询公司信息
+     */
+    @ResponseBody
+    @RequestMapping("/selectCompanyInfo")
+    public AjaxResult selectCompanyInfo() {
+        try {
+            DevCompany company = devCompanyService.selectCompanyInfoByComId();
+            return AjaxResult.success(company);
+        } catch (Exception e) {
+            return error(e.getMessage());
+        }
+    }
+
 }

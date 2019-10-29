@@ -100,4 +100,10 @@ public interface IDevCompanyService
 	 * @return 结果
 	 */
 	String checkLoginNumberUnique(DevCompany company);
+
+	/**
+	 * 查询用户自己公司信息
+	 * @return 结果
+	 */
+	DevCompany selectCompanyInfoByComId();
 }

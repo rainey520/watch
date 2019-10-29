@@ -130,14 +130,14 @@ public class DevWorkDayHourServiceImpl implements IDevWorkDayHourService {
             for (DevDataLog dataLog : dataLogs) {
                 try {
                     // 查询出当前系统时间与前一个小时的上传数据
-                    dataLogTask = dataLogMapper.selectDataLogBeInOrFinish(WorkConstants.SING_LINE,dataLog.getDevId(),dataLog.getIoId(), dataLog.getWorkId(),dataLog.getLineId(), sysDateTimeOld, sysDateTime);
+                    dataLogTask = dataLogMapper.selectDataLogBeInOrFinish(WorkConstants.SING_LINE,dataLog.getDevId(),null, dataLog.getWorkId(),dataLog.getLineId(), sysDateTimeOld, sysDateTime);
                     if (dataLogTask != null && dataLogTask.getSumData() != 0) {
                         /**
                          * 获取IO口数据的上传日期，通过上传日期判断硬件IO口24小时记录表有没有存在数据<br>
                          *     没有记录则增加硬件IO口24小时记录
                          */
                         // 查询工单各个IO口每天24小时记录是否存在
-                        devWorkDayHour = devWorkDayHourMapper.selectWorkDayHourListByDate(dataLog.getWorkId(),dataLog.getLineId(),dataLog.getDevId(), dataLog.getIoId(), dataLogTask.getCreateDate());
+                        devWorkDayHour = devWorkDayHourMapper.selectWorkDayHourListByDate(dataLog.getWorkId(),dataLog.getLineId(),dataLog.getDevId(), null, dataLogTask.getCreateDate());
                         if (devWorkDayHour == null) {
                             // 不存在该工单指定IO口当天的记录,创建记录
                             devWorkDayHour = new DevWorkDayHour();
@@ -146,8 +146,6 @@ public class DevWorkDayHourServiceImpl implements IDevWorkDayHourService {
                             devWorkDayHour.setDataTime(new Date());
                             devWorkDayHour.setLineId(dataLog.getLineId());
                             devWorkDayHour.setWorkId(dataLog.getWorkId());
-                            // 工位id
-                            devWorkDayHour.setIoId(dataLog.getIoId());
                             devWorkDayHour.setDevId(dataLog.getDevId());
                             devWorkDayHour.setDevName(devListMapper.selectDevListById(dataLog.getDevId()).getDeviceName());
                             devWorkDayHourMapper.insertDevWorkDayHour(devWorkDayHour);

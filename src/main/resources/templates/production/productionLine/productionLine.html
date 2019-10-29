@@ -28,12 +28,15 @@
 				</form>
 			</div>
 			
-	        <div class="btn-group-sm hidden-xs" id="toolbar" role="group">
+	        <div class="btn-group-sm hidden-xs" id="toolbar" role="group" th:with="company=${@devCompany.selectCompanyInfoByComId()}">
 				<a class="btn btn-success" onclick="add()" shiro:hasPermission="production:productionLine:add">
 					<i class="fa fa-plus"></i> 添加
 				</a>
 				<a class="btn btn-primary btn-edit disabled" onclick="edit()" shiro:hasPermission="production:productionLine:add">
 					<i class="fa fa-edit"></i> 修改
+				</a>
+				<a class="btn btn-warning" onclick="showHardware()">
+					<i class="fa fa-eject"></i> 硬件信息
 				</a>
 			</div>
 			<div class="col-sm-12 select-table table-striped">
@@ -66,8 +69,8 @@
 		        },
 				{
 					field : 'id', 
-					title : '',
-					visible: false
+					title : '产线ID',
+					sortable: true,
 				},
 				{
 					field : 'lineName', 
@@ -103,9 +106,12 @@
 					sortable: true
 				},
 				{
-					field : 'createTime',
-					title : '创建时间',
-					sortable: true
+					visible: editFlag == 'hidden' ? false : true,
+					title: '自动采集',
+					align: 'center',
+					formatter: function (value, row, index) {
+						return statusTools(row);
+					}
 				},
 		        {
 		            title: '操作',
@@ -113,6 +119,9 @@
 		            formatter: function(value, row, index) {
 		            	var actions = [];
 		            	actions.push('<a class="btn btn-success btn-xs ' + editFlag + '" href="#" onclick="edit(\'' + row.id + '\')"><i class="fa fa-edit"></i>编辑</a> ');
+		            	// if (row.lineTag === '1') {
+						// 	actions.push('<a class="btn btn-primary btn-xs" href="javascript:void(0)" onclick="punchUser(\'' + row.id + '\',\''+ row.lineName +'\')"><i></i>人员状态</a> ');
+		            	// }
                         actions.push('<a class="btn btn-danger btn-xs ' + removeFlag + '" href="#" onclick="remove(\'' + row.id + '\')"><i class="fa fa-remove"></i>删除</a>');
 						return actions.join('');
 		            }
@@ -167,6 +176,37 @@
 		function submitHandler() {
 			$.modal.close();
 		}
-    </script>
+
+		/* 自动采集状态更新 */
+		function statusTools(row) {
+			if (row.manual == 1) {
+				return '<i class=\"fa fa-toggle-off text-info fa-2x\" onclick="disable(\'' + row.id + '\')"></i> ';
+			} else {
+				return '<i class=\"fa fa-toggle-on text-info fa-2x\" onclick="enable(\'' + row.id + '\')"></i> ';
+			}
+		}
+
+		/* 激活自动采集 */
+		function disable(id) {
+			$.modal.confirm("确认激活自动采集吗？", function () {
+				$.operate.post(prefix + "/changeStatus", {"id": id, "manual": 0});
+			})
+		}
+
+		/* 取消自动采集 */
+		function enable(id) {
+			$.modal.confirm("确认取消自动采集吗？", function () {
+				$.operate.post(prefix + "/changeStatus", {"id": id, "manual": 1});
+			})
+		}
+
+		/**
+		 * 查看硬件信息
+		 */
+		function showHardware() {
+			var url = prefix + "/showHardware";
+			$.modal.open("查看硬件信息",url);
+		}
+	</script>
 </body>
 </html>

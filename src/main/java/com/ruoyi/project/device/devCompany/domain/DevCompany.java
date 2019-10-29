@@ -171,7 +171,7 @@ public class DevCompany extends BaseEntity
 				", sign=" + sign +
 				", fileSize=" + fileSize +
 				", loginNumber='" + loginNumber + '\'' +
-				", loginPassword=" + loginPassword +
+				", loginPassword='" + loginPassword + '\'' +
 				'}';
 	}
 }

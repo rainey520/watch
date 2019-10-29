@@ -37,8 +37,13 @@ public class ProductionLine extends BaseEntity
 	 * 产线负责人权限标识 0、没有权限，1、有权限
 	 */
 	private Integer lineSign;
+
+	/**
+	 * 公司自动手动采集标记
+	 * 1、手动采集默认值，0、自动采集
+	 */
 	@Excel(name = "手动")
-	private Integer manual;//是否是手动 1、是 0、不是
+	private Integer manual;
 	/** 备注信息 */
 	@Excel(name = "备注信息")
 	private String remark;
@@ -61,8 +66,8 @@ public class ProductionLine extends BaseEntity
 	private Integer[] devIo;
 	/** 自定义数据 */
 	private String paramConfig;
-
-	private List<String> paramArray;//自定义数据数组
+	//自定义数据数组
+	private List<String> paramArray;
 
 	/** 作业指导书
 	 * */
@@ -90,7 +95,7 @@ public class ProductionLine extends BaseEntity
 
 	private Integer  status;//状态
 
-	private List<Workstation> workstations;//对应产线所以工位
+	private List<Workstation> workstations;//对应产线所有工位
 
 	public Integer getLineSign() {
 		return lineSign;

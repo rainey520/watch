@@ -55,7 +55,7 @@ public class DevProductList extends BaseEntity {
     /**
      * 标准工时
      */
-    @Excel(name = "标准工时[pcs/h]")
+    @Excel(name = "UPH")
     private Integer standardHourYield;
     /**
      * 备注信息

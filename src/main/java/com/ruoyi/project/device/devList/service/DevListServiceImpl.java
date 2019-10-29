@@ -51,8 +51,8 @@ public class DevListServiceImpl implements IDevListService {
      * @return 硬件集合
      */
     @Override
-    public List<DevList> selectDevListList(DevList devList, HttpServletRequest request) {
-        User user = JwtUtil.getTokenUser(ServletUtils.getRequest());
+    public List<DevList> selectDevListList(DevList devList) {
+        User user = JwtUtil.getUser();
         if (user == null) {
             return Collections.emptyList();
         }

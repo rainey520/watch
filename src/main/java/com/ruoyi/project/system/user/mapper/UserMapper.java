@@ -160,4 +160,11 @@ public interface UserMapper
      * @return 结果
      */
     int updateUserLangVersion(User user);
+
+    /**
+     * 通过手机号查询用户信息
+     * @param userPhone 用户手机
+     * @return 结果
+     */
+    User selectUserInfoByPhone(@Param("userPhone") String userPhone);
 }

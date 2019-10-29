@@ -118,6 +118,10 @@ public class WorkExceptionListController extends BaseController {
     public String edit(@PathVariable("id") Integer id, ModelMap mmap) {
         WorkExceptionList workExceptionList = workExceptionListService.selectWorkExceptionListById(id);
         mmap.put("workExceptionList", workExceptionList);
+        User user = JwtUtil.getUser();
+        if (UserConstants.LANGUAGE_EN.equals(user.getLangVersion())) {
+            return prefix + "/editEn";
+        }
         return prefix + "/edit";
     }
 

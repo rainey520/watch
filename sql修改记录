@@ -25,3 +25,41 @@ ADD COLUMN `login_password` INT NULL DEFAULT 123456 COMMENT '登录密码' AFTER
 
 
 
+
+
+############################   2019-10-21 新增VIP用户数据分析模块   ##############################################
+ALTER TABLE `bzystandard`.`dev_work_order`
+CHANGE COLUMN `people_number` `people_number` INT(11) NULL DEFAULT 0 COMMENT '用工人数' ;
+# 新增公司考勤记录
+CREATE TABLE `bzystandard`.`tab_time_record` (
+  `id` INT NOT NULL AUTO_INCREMENT COMMENT '公司考勤记录主键id',
+  `company_id` INT NULL COMMENT '公司id',
+  `line_id` INT NULL COMMENT '产线id',
+  `normal_hour` FLOAT(7,2) NULL COMMENT '正常工时数',
+  `normal_number` INT NULL COMMENT '正常用工人数',
+  `overtime_hour` FLOAT(7,2) NULL COMMENT '加班小时数',
+  `overtime_number` INT NULL COMMENT '加班的人数',
+  `overtime_race` FLOAT(4,1) NULL DEFAULT 1.5 COMMENT '加班倍率(1.5、2、3)',
+  `change_hour` FLOAT(7,2) NULL COMMENT '手动调整工时',
+  `record_date` DATE NULL COMMENT '记录日期年月日',
+  PRIMARY KEY (`id`))
+COMMENT = '公司考勤记录';
+ALTER TABLE `bzystandard`.`dev_work_order`
+CHANGE COLUMN `sign_huor` `sign_huor` FLOAT(10,2) NULL DEFAULT '0.00' ;
+
+ALTER TABLE `bzystandard`.`tab_time_record`
+ADD COLUMN `input_flag` INT NULL DEFAULT 0 COMMENT '考勤确认状态(0、默认值未确认，1、已经确认)' AFTER `record_date`;
+
+
+
+# 菜单更新
+INSERT INTO `bzystandard`.`sys_menu_en` (`menu_id`, `menu_name`, `parent_id`, `order_num`, `url`, `menu_type`, `visible`, `perms`, `icon`, `create_by`, `create_time`, `app_sign`, `menu_tag`) VALUES ('1511', '公司数据分析', '1496', '5', '#', 'F', '0', 'production:cost:list', '#', 'admin', '2019-10-25 10:26:54', '0', '3');
+
+# 添加硬件产线关联id信息
+ALTER TABLE `bzystandard`.`dev_list`
+ADD COLUMN `line_id` INT NULL COMMENT '计数器硬件关联的产线id' AFTER `dev_type`;
+
+
+
+
+

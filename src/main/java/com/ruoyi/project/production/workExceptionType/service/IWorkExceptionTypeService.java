@@ -4,6 +4,7 @@ import com.ruoyi.project.production.workExceptionType.domain.WorkExceptionType;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 工单工单异常类型 服务层
@@ -59,4 +60,10 @@ public interface IWorkExceptionTypeService
 	 * @return 结果
 	 */
     String checkExcTypeNameUnique(WorkExceptionType workExceptionType);
+
+	/**
+	 * app查询所有的异常类型列表
+	 * @return 结果
+	 */
+	Map<String, Object> selectWorkExcTypeList();
 }

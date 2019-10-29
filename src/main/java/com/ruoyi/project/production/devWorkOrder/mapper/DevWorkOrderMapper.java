@@ -1,6 +1,8 @@
 package com.ruoyi.project.production.devWorkOrder.mapper;
 
 import com.ruoyi.project.production.devWorkOrder.domain.DevWorkOrder;
+import com.ruoyi.project.production.report.domain.ComCost;
+import com.ruoyi.project.production.report.domain.CostItem;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Update;
 
@@ -149,11 +151,13 @@ public interface DevWorkOrderMapper {
 
 
     /**
-     * 查询昨天生产的工单
+     * 查询对应产线昨天更新的工单信息
      *
-     * @return
+     * @param companyId 公司id
+     * @param lineId 产线id
+     * @return 结果
      */
-    List<DevWorkOrder> selectWorkOrderAllYesterday(@Param("companyId") Integer companyId);
+    List<DevWorkOrder> selectWorkOrderAllYesterday(@Param("companyId") Integer companyId,@Param("lineId") Integer lineId);
 
     /**
      * 查询当天正在生产或者已经完成的所有工单
@@ -297,12 +301,6 @@ public interface DevWorkOrderMapper {
     DevWorkOrder selectWorkOrderByCode(@Param("workCode") String workCode);
 
     /**
-     * app端查看两条工单
-     * @return 结果
-     */
-    List<DevWorkOrder> appSelectWorkListTwo();
-
-    /**
      * 修改工单推送反馈信息
      * @param id 工单id
      * @param resSign 反馈状态
@@ -310,4 +308,18 @@ public interface DevWorkOrderMapper {
      */
     @Update("update dev_work_order set res_sign = #{resSign} where id  = #{id}")
     int updateWorkOrderResSign(@Param("id")int id,@Param("resSign")int resSign);
+
+    /**
+     * 查看工单列表
+     * @param comCost 检索条件
+     * @return 结果
+     */
+    List<CostItem> selectWorkListByDayTime(ComCost comCost);
+
+    /**
+     * 查询所有的产线信息
+     * @param comCost 检索条件
+     * @return 结果
+     */
+    List<ComCost> selectWorkLineInfo(ComCost comCost);
 }

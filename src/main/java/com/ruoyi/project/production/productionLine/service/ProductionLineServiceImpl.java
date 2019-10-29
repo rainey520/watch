@@ -72,6 +72,11 @@ public class ProductionLineServiceImpl implements IProductionLineService {
     public List<ProductionLine> selectProductionLineList(ProductionLine productionLine) {
         User u = JwtUtil.getUser();
         if (u == null) return Collections.emptyList();
+        // 查询公司信息
+        DevCompany company = companyMapper.selectDevCompanyById(u.getCompanyId());
+        if (company == null) {
+            return Collections.emptyList();
+        }
         productionLine.setCompanyId(u.getCompanyId());
         List<ProductionLine> list = productionLineMapper.selectProductionLineList(productionLine);
         User user;
@@ -375,5 +380,15 @@ public class ProductionLineServiceImpl implements IProductionLineService {
         User user = JwtUtil.getTokenCookie(cookies);
         if (user == null) return Collections.emptyList();
         return productionLineMapper.selectAllProductionLineByCompanyId(user.getCompanyId());
+    }
+
+    /**
+     * 更新产线自动采集信息
+     * @param line 产线信息
+     * @return 结果
+     */
+    @Override
+    public int changeStatus(ProductionLine line) {
+        return productionLineMapper.updateLineStatus(line);
     }
 }

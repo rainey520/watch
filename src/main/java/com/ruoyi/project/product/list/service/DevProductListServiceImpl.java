@@ -219,13 +219,13 @@ public class DevProductListServiceImpl implements IDevProductListService {
                 Integer hours = Integer.parseInt(ExcelUtil.getCellValue1(row,config.getCon4()-1).toString());
                 if(hours == null || hours <=0){
                     failNum++;
-                    failMsg.append("<br/>第"+(i+1)+"行，标准工时必须大于0");
+                    failMsg.append("<br/>第"+(i+1)+"行，UPH必须大于0");
                     continue;
                 }
                 product.setStandardHourYield(hours);
             }catch (Exception e){
                 failNum++;
-                failMsg.append("<br/>第"+(i+1)+"行,标准工时解析失败");
+                failMsg.append("<br/>第"+(i+1)+"行,UPH解析失败");
                 continue;
             }
             //获取单价

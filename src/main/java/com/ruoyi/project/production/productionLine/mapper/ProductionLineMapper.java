@@ -133,4 +133,11 @@ public interface ProductionLineMapper
 	 * @return 结果
 	 */
     ProductionLine selectProductionLineByName(@Param("companyId") Integer companyId, @Param("lineName") String lineName);
+
+	/**
+	 * 更新产线自动采集状态
+	 * @param line 产线信息
+	 * @return 结果
+	 */
+	int updateLineStatus(ProductionLine line);
 }

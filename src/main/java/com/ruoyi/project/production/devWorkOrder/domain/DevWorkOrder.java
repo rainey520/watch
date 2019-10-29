@@ -88,6 +88,10 @@ public class DevWorkOrder extends BaseEntity {
      */
     private Integer productStandardHour;
     /**
+     * 产品UPH
+     */
+    private Integer productUPH;
+    /**
      * 创建时间
      */
     private Date createTime;
@@ -136,7 +140,7 @@ public class DevWorkOrder extends BaseEntity {
      */
     private Integer workorderStatus;
     /**
-     * 工单操作状态
+     * 工单操作状态 0、未开始，1、进行中，2、已暂停，3、已经结束
      */
     private Integer operationStatus;
     /**
@@ -268,6 +272,14 @@ public class DevWorkOrder extends BaseEntity {
     private String devCode; //设备编号
     private String devType; //设备类型
 
+
+    public Integer getProductUPH() {
+        return productUPH;
+    }
+
+    public void setProductUPH(Integer productUPH) {
+        this.productUPH = productUPH;
+    }
 
     public Integer getOldInputNum() {
         return oldInputNum;

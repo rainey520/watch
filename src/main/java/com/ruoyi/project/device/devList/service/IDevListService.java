@@ -4,7 +4,6 @@ import com.ruoyi.project.device.devList.domain.DevList;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -29,7 +28,7 @@ public interface IDevListService
      * @param devList 硬件信息
      * @return 硬件集合
      */
-	public List<DevList> selectDevListList(DevList devList, HttpServletRequest request);
+	public List<DevList> selectDevListList(DevList devList);
 	
 	/**
      * 新增硬件

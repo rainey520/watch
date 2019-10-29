@@ -64,7 +64,7 @@
         <div class="col-sm-6">
             <label class="col-sm-6">Planning start time：</label>
             <div class="col-sm-6">
-                <span th:utext="${#dates.format(devWorkOrder.productionStart,'yyyy-MM-dd HH:ss')}"></span>
+                <span th:utext="${#dates.format(devWorkOrder.productionStart,'yyyy-MM-dd HH:mm')}"></span>
             </div>
         </div>
     </div>
@@ -78,7 +78,7 @@
         <div class="col-sm-6">
             <label class="col-sm-6">Planned completion time：</label>
             <div class="col-sm-6">
-                <span th:utext="${#dates.format(devWorkOrder.productionEnd,'yyyy-MM-dd HH:ss')}"></span>
+                <span th:utext="${#dates.format(devWorkOrder.productionEnd,'yyyy-MM-dd HH:mm')}"></span>
             </div>
         </div>
     </div>
@@ -92,7 +92,7 @@
         <div class="col-sm-6">
             <label class="col-sm-6">Actual start time：</label>
             <div class="col-sm-6">
-                <span th:utext="${#dates.format(devWorkOrder.startTime,'yyyy-MM-dd HH:ss')}"></span>
+                <span th:utext="${#dates.format(devWorkOrder.startTime,'yyyy-MM-dd HH:mm')}"></span>
             </div>
         </div>
     </div>
@@ -106,7 +106,7 @@
         <div class="col-sm-6">
             <label class="col-sm-6">Actual completion time：</label>
             <div class="col-sm-6">
-                <span th:utext="${#dates.format(devWorkOrder.endTime,'yyyy-MM-dd HH:ss')}"></span>
+                <span th:utext="${#dates.format(devWorkOrder.endTime,'yyyy-MM-dd HH:mm')}"></span>
             </div>
         </div>
     </div>

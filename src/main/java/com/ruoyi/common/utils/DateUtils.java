@@ -176,4 +176,33 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils
 
         return c.getTime();
     }
+
+    /**
+     * 判断一个时间是否在对应的时间段内
+     * @param time 判断的时间date类型
+     * @param sTime 开始时间
+     * @param eTime 结束时间
+     * @return 布尔结果
+     * @throws ParseException
+     */
+    public static boolean isTimeRange(Date time,String sTime,String eTime){
+        try {
+            SimpleDateFormat df = new SimpleDateFormat("HH:mm");
+            Date now = df.parse(df.format(time));
+            Date begin = df.parse(sTime);
+            Date end = df.parse(eTime);
+            Calendar nowTime = Calendar.getInstance();
+            nowTime.setTime(now);
+            Calendar beginTime = Calendar.getInstance();
+            beginTime.setTime(begin);
+            Calendar endTime = Calendar.getInstance();
+            endTime.setTime(end);
+            if (nowTime.before(endTime) && nowTime.after(beginTime)) {
+                return true;
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }

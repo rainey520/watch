@@ -370,4 +370,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		</set>
 		where user_id = #{userId}
 	</update>
+
+	<!--通过手机号查询用户信息-->
+	<select id="selectUserInfoByPhone" resultMap="UserResult1">
+		SELECT * FROM sys_user where login_name = #{userPhone} limit 1;
+	</select>
 </mapper>
