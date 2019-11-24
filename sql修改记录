@@ -59,6 +59,8 @@ INSERT INTO `bzystandard`.`sys_menu_en` (`menu_id`, `menu_name`, `parent_id`, `o
 ALTER TABLE `bzystandard`.`dev_list`
 ADD COLUMN `line_id` INT NULL COMMENT '计数器硬件关联的产线id' AFTER `dev_type`;
 
+#测试
+
 
 
 
