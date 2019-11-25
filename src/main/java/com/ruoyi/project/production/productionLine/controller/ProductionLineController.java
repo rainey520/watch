@@ -129,9 +129,9 @@ public class ProductionLineController extends BaseController {
     @Log(title = "生产线", businessType = BusinessType.UPDATE)
     @PostMapping("/edit")
     @ResponseBody
-    public AjaxResult editSave(ProductionLine productionLine, HttpServletRequest request) {
+    public AjaxResult editSave(ProductionLine productionLine) {
         try {
-            return toAjax(productionLineService.updateProductionLine(productionLine, request));
+            return toAjax(productionLineService.updateProductionLine(productionLine));
         } catch (BusinessException e) {
             return error(e.getMessage());
         }
@@ -145,9 +145,9 @@ public class ProductionLineController extends BaseController {
     @Log(title = "生产线", businessType = BusinessType.DELETE)
     @PostMapping("/remove")
     @ResponseBody
-    public AjaxResult remove(Integer id, HttpServletRequest request) {
+    public AjaxResult remove(Integer id) {
         try {
-            return toAjax(productionLineService.deleteProductionLineById(id, request));
+            return toAjax(productionLineService.deleteProductionLineById(id));
         } catch (BusinessException e) {
             return error(e.getMessage());
         }
@@ -247,7 +247,11 @@ public class ProductionLineController extends BaseController {
     @PostMapping("/changeStatus")
     @ResponseBody
     public AjaxResult changeStatus(ProductionLine line){
-        return toAjax(productionLineService.changeStatus(line));
+        try {
+            return toAjax(productionLineService.changeStatus(line));
+        } catch (BusinessException e) {
+            return error(e.getMessage());
+        }
     }
 
     /**

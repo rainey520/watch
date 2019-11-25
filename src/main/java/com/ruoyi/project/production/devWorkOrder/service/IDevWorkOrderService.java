@@ -88,7 +88,7 @@ public interface IDevWorkOrderService {
      * @param id
      * @return
      */
-    int submitWorkOrder(Integer id,Integer uid);
+    int submitWorkOrder(Integer id);
 
     /**
      * 根据工单编号查询对应的工单信息

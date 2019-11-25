@@ -1,6 +1,8 @@
 package com.ruoyi.project.production.workstation.controller;
 
 import com.ruoyi.common.constant.FileConstants;
+import com.ruoyi.common.constant.UserConstants;
+import com.ruoyi.common.exception.BusinessException;
 import com.ruoyi.framework.aspectj.lang.annotation.Log;
 import com.ruoyi.framework.aspectj.lang.enums.BusinessType;
 import com.ruoyi.framework.jwt.JwtUtil;
@@ -12,13 +14,12 @@ import com.ruoyi.project.production.devWorkOrder.domain.DevWorkOrder;
 import com.ruoyi.project.production.devWorkOrder.service.IDevWorkOrderService;
 import com.ruoyi.project.production.workstation.domain.Workstation;
 import com.ruoyi.project.production.workstation.service.IWorkstationService;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
+import com.ruoyi.project.system.user.domain.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,13 +49,16 @@ public class WorkstationController extends BaseController
 	public String workstation(@PathVariable("id") int id, ModelMap mmap)
 	{
 		mmap.put("line",id);
-	    return prefix + "/workstation";
+		User user = JwtUtil.getUser();
+		if (UserConstants.LANGUAGE_EN.equals(user.getLangVersion())) {
+			return prefix + "/workstationEn";
+		}
+		return prefix + "/workstation";
 	}
 	
 	/**
 	 * 查询工位配置列表
 	 */
-	@RequiresPermissions("production:workstation:list")
 	@PostMapping("/list")
 	@ResponseBody
 	public TableDataInfo list(Workstation workstation)
@@ -77,19 +81,15 @@ public class WorkstationController extends BaseController
 	/**
 	 * 新增保存工位配置
 	 */
-	@RequiresPermissions("production:workstation:add")
 	@Log(title = "工位配置", businessType = BusinessType.INSERT)
 	@PostMapping("/add")
 	@ResponseBody
-	public AjaxResult addSave(Workstation workstation,HttpServletRequest request)
+	public AjaxResult addSave(Workstation workstation)
 	{
 	    try {
-	    	workstation.setCompanyId(JwtUtil.getTokenUser(request).getCompanyId());
-            workstationService.insertWorkstation(workstation);
-            return AjaxResult.success();
-        }catch (Exception e){
-	    	e.printStackTrace();
-	        return AjaxResult.error(e.getMessage());
+			return toAjax(workstationService.insertWorkstation(workstation));
+        }catch (BusinessException e){
+	        return error(e.getMessage());
         }
 
 	}
@@ -108,7 +108,7 @@ public class WorkstationController extends BaseController
 	/**
 	 * 修改保存工位配置
 	 */
-	@RequiresPermissions("production:workstation:edit")
+	// @RequiresPermissions("production:workstation:edit")
 	@Log(title = "工位配置", businessType = BusinessType.UPDATE)
 	@PostMapping("/edit")
 	@ResponseBody
@@ -126,7 +126,7 @@ public class WorkstationController extends BaseController
 	/**
 	 * 删除工位配置
 	 */
-	@RequiresPermissions("production:workstation:remove")
+	// @RequiresPermissions("production:workstation:remove")
 	@Log(title = "工位配置", businessType = BusinessType.DELETE)
 	@PostMapping( "/remove")
 	@ResponseBody

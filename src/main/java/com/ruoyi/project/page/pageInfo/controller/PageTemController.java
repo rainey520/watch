@@ -1,5 +1,6 @@
 package com.ruoyi.project.page.pageInfo.controller;
 
+import com.ruoyi.common.constant.CompanyConstants;
 import com.ruoyi.common.constant.PageTypeConstants;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.framework.web.controller.BaseController;
@@ -101,6 +102,9 @@ public class PageTemController extends BaseController {
         mmap.put("company",info.getDevCompany());
         mmap.put("pwd",pwd);
         String to = "error/404";
+        if (info.getLine() != null && CompanyConstants.LINE_COLLECT_AUTO.equals(info.getLine().getManual())) {
+            return prefix + "/tem2";
+        }
         switch (info.getPageType()){
             case PageTypeConstants.PAGE_TYPE_HZ:
                 to = prefix +"/tem1";
@@ -111,6 +115,7 @@ public class PageTemController extends BaseController {
             case PageTypeConstants.PAGE_TYPE_CJ:
                 to = prefix +"/tem3";
                 break;
+            default:
         }
         return to;
     }

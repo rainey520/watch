@@ -11,12 +11,12 @@
 				<div class="select-list">
 					<ul>
 						<li>
-							工位名称：<input type="text" name="wName"/>
+							Station Name：<input type="text" name="wName"/>
 							<input type="hidden" name="lineId" th:value="${line}"/>
 						</li>
 						<li>
-							<a class="btn btn-primary btn-rounded btn-sm" onclick="$.table.search()"><i class="fa fa-search"></i>&nbsp;搜索</a>
-							<a class="btn btn-warning btn-rounded btn-sm" onclick="$.form.reset()"><i class="fa fa-refresh"></i>&nbsp;重置</a>
+							<a class="btn btn-primary btn-rounded btn-sm" onclick="$.table.search()"><i class="fa fa-search"></i>&nbsp;search</a>
+							<a class="btn btn-warning btn-rounded btn-sm" onclick="$.form.reset()"><i class="fa fa-refresh"></i>&nbsp;reset</a>
 						</li>
 					</ul>
 				</div>
@@ -25,7 +25,7 @@
 
 		<div class="btn-group-sm hidden-xs" id="toolbar" role="group">
 			<a class="btn btn-success" onclick="add()" shiro:hasPermission="production:productionLine:add">
-				<i class="fa fa-plus"></i> 添加
+				<i class="fa fa-plus"></i> add
 			</a>
 		</div>
 		<div class="col-sm-12 select-table table-striped">
@@ -36,7 +36,7 @@
 <div th:include="include::footer"></div>
 <script type="text/javascript">
 	$("#form-purchase-add select").select2({
-		placeholder:'请选择'
+		placeholder:'Please choose'
 	});
 </script>
 <script th:inline="javascript">
@@ -51,7 +51,7 @@
 			updateUrl: prefix + "/edit/{id}",
 			removeUrl: prefix + "/remove",
 			exportUrl: prefix + "/export",
-			modalName: "工位配置",
+			modalName: "Station Config",
 			sortName:'cTime',
 			sortOrder:'desc',
 			search: false,
@@ -69,38 +69,38 @@
 				},
 				{
 					field : 'wName',
-					title : '工位名称',
+					title : 'Station Name',
 					sortable: true
 				},
 				{
 					field : 'devCode',
-					title : '计数器硬件编码',
+					title : 'Js Code',
 					sortable: true,
 					formatter:function (value, row, index) {
 						if(row.devId == 0){
-							return "未配置"
+							return "Not Config"
 						}
 						return value;
 					}
 				},
 				{
 					field : 'sign',
-					title : '数据标识',
+					title : 'Data Sign',
 					sortable: true,
 					formatter:function (value, row, index) {
 						if(value == 1){
-							return '<span style="color: green">是</span>'
+							return '<span style="color: green">Yes</span>'
 						}
-						return "否";
+						return "No";
 					}
 				},
 				{
-					title: '操作',
+					title: 'operation',
 					align: 'center',
 					formatter: function(value, row, index) {
 						var actions = [];
-						actions.push('<a class="btn btn-success btn-xs" href="#" onclick="edit(\'' + row.id + '\')"><i class="fa fa-edit"></i>编辑</a> ');
-						actions.push('<a class="btn btn-danger btn-xs" href="#" onclick="remove(\'' + row.id + '\')"><i class="fa fa-remove"></i>删除</a>');
+						actions.push('<a class="btn btn-success btn-xs" href="#" onclick="edit(\'' + row.id + '\')"><i class="fa fa-edit"></i>edit</a> ');
+						actions.push('<a class="btn btn-danger btn-xs" href="#" onclick="remove(\'' + row.id + '\')"><i class="fa fa-remove"></i>remove</a>');
 						return actions.join('');
 					}
 				}]
@@ -111,7 +111,7 @@
 	/** 添加工位 */
 	function add() {
 		var lineId =[[${line}]]
-		$.modal.open("添加工位",prefix+"/add?line="+lineId);
+		$.modal.open("add Station",prefix+"/add?line="+lineId);
 	}
 
 
@@ -121,7 +121,7 @@
 	 */
 	function edit(id) {
 		var url = prefix+"/edit/"+id;
-		$.modal.open("修改工位",url);
+		$.modal.open("edit Station",url);
 	}
 
 	/**
@@ -129,7 +129,7 @@
 	 * @param id
 	 */
 	function remove(id) {
-		$.modal.confirm("确定删除该条" + $.table._option.modalName + "信息吗？", function () {
+		$.modal.confirm("Are you sure you want to delete this message?", function () {
 			var url =  $.table._option.removeUrl.replace("{id}", id);
 			var data = {id: id};
 			$.operate.submit(url, "post", "json", data);

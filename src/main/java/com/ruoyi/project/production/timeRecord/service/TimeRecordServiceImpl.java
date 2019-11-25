@@ -103,8 +103,6 @@ public class TimeRecordServiceImpl implements ITimeRecordService {
         updateHourInfo(timeRecord, timeRecord);
         if (CompanyConstants.DAY_IS_YESTERDAY.equals(timeRecord.getDaySign())) {
             timeRecord.setInputFlag(CompanyConstants.LINE_TIME_RECORD_CONFIRM);
-        } else {
-            timeRecord.setInputFlag(CompanyConstants.LINE_TIME_RECORD_NOT_CONFIRM);
         }
         return timeRecordMapper.updateTimeRecord(timeRecord);
     }

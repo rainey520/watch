@@ -11,6 +11,12 @@ package com.ruoyi.common.constant;
  * @Version: 1.0
  **/
 public class CompanyConstants {
+
+    /**
+     * 公司是否为VIP标识 1、为VIP，0、普通会员
+     */
+    public final static Integer VIP_SIGN_YES = 1;
+    public final static Integer VIP_SIGN_NO = 0;
     /**
      * 公司名称是否唯一的返回结果码
      */

@@ -143,7 +143,7 @@ public class InitServiceImpl implements IInitService {
     public Map<String, Object> checkJsCode(LineData lineData) {
         Map<String, Object> map = new HashMap<>(16);
         try {
-            if (lineData == null) {
+            if (lineData != null) {
                 if (StringUtils.isEmpty(lineData.getJsCode())) {
                     map.put("code", 0);
                     map.put("msg", "计数器硬件不能为空");
@@ -156,6 +156,10 @@ public class InitServiceImpl implements IInitService {
                     map.put("msg", "未成功生成计数器硬件编码");
                     return map;
                 }
+                dev.setLineId(dev.getLineId() == null ? 0 - 1 : dev.getLineId() - 1);
+                dev.setDeviceName(dev.getDeviceName());
+                dev.setRemark(dev.getRemark());
+                devListMapper.updateDevList(dev);
                 map.put("code", 1);
                 map.put("data", lineData);
                 map.put("msg", "请求成功");

@@ -37,7 +37,7 @@ public class WatchInfo implements Serializable {
     private Integer lineId;
     private String lineIds;
 
-    /** 查看明细 */
+    /** 查看明细信息 */
     private WatchDetail watchDetail;
     /** 查看汇总 */
     private List<PageTem> watchList;

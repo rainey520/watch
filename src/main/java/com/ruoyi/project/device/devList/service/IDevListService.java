@@ -105,9 +105,22 @@ public interface IDevListService
 	List<DevList> selectDevNotConfig();
 
 	/**
+	 * 查询所以未配置的硬件
+	 * @return
+	 */
+	List<DevList> selectJSDevNotConfig();
+
+	/**
 	 * app端查询硬件列表
 	 * @param devList 硬件信息
 	 * @return 结果
 	 */
 	List<DevList> appSelectDevList(DevList devList);
+
+	/**
+	 * 删除硬件信息
+	 * @param id 硬件主键id
+	 * @return 结果
+	 */
+    int removeDevInfo(Integer id);
 }

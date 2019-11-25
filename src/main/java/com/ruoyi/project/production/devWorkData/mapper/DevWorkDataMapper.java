@@ -35,7 +35,6 @@ public interface DevWorkDataMapper {
      * @param devWorkData 工单数据信息
      * @return 结果
      */
-//	@DataSource(DataSourceType.SLAVE)
     public int insertDevWorkData(DevWorkData devWorkData);
 
     /**
@@ -73,7 +72,6 @@ public interface DevWorkDataMapper {
      * @param scType     车间或流水线标识
      * @return
      */
-//	@DataSource(DataSourceType.SLAVE)
     DevWorkData selectWorkDataByCompanyLineWorkDev(@Param("company_id") int company_id, @Param("line_id") int line_id, @Param("work_id") int work_id,
                                                    @Param("dev_id") int dev_id, @Param("io_id") int io_id, @Param("scType") int scType);
 
@@ -84,7 +82,6 @@ public interface DevWorkDataMapper {
      * @param initial_data 工单开始时硬件第一次上传的数据
      * @return
      */
-//	@DataSource(DataSourceType.SLAVE)
     int initWorkData(@Param("id") int id, @Param("initial_data") int initial_data, @Param("sign") int sign);
 
     /**
@@ -94,7 +91,6 @@ public interface DevWorkDataMapper {
      * @param total 累计产量
      * @return
      */
-//	@DataSource(DataSourceType.SLAVE)
     int saveTotalWorkData(@Param("id") int id, @Param("total") int total, @Param("sign") int sign);
 
     /**
@@ -103,7 +99,6 @@ public interface DevWorkDataMapper {
      * @param work_id
      * @return
      */
-//	@DataSource(DataSourceType.SLAVE)
     int updateWorkSigInit(@Param("work_id") int work_id);
 
     /**
@@ -116,7 +111,6 @@ public interface DevWorkDataMapper {
      * @param scType    车间或流水线标记
      * @return 结果
      */
-//	@DataSource(DataSourceType.SLAVE)
     DevWorkData selectWorkDataByIosign(@Param("companyId") Integer companyId,
                                        @Param("workId") Integer workId,
                                        @Param("lineId") Integer lineId,
@@ -134,4 +128,14 @@ public interface DevWorkDataMapper {
      */
     DevWorkOrder selectHouseWorkDataActualNum(@Param("companyId") Integer companyId, @Param("lineId") Integer lineId,
                                               @Param("workId") Integer workId, @Param("scType") Integer scType);
+
+    /**
+     * 查询产线对应的非有效数据工位的计数情况
+     * @param companyId 公司id
+     * @param lineId 产线id
+     * @param workId 工单id
+     * @return 结果
+     */
+    List<DevWorkData> selectDevWorkDataNotSignByLineId(@Param("companyId") Integer companyId, @Param("lineId") Integer lineId,
+                                                       @Param("workId") Integer workId);
 }

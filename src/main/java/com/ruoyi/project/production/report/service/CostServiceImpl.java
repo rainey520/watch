@@ -1,5 +1,6 @@
 package com.ruoyi.project.production.report.service;
 
+import com.ruoyi.common.constant.CompanyConstants;
 import com.ruoyi.common.constant.WorkConstants;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.poi.PdfUtil;
@@ -73,6 +74,11 @@ public class CostServiceImpl implements ICostService {
             if (company == null) {
                 map.put("code", 0);
                 map.put("msg", "用户公司不存在或被删除");
+                return map;
+            }
+            if (CompanyConstants.VIP_SIGN_NO.equals(company.getSign())) {
+                map.put("code", 0);
+                map.put("msg", "非VIP用户");
                 return map;
             }
             // 查询对应产线对应产品的所有达成率

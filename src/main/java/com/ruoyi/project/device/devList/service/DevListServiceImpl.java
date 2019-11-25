@@ -248,4 +248,34 @@ public class DevListServiceImpl implements IDevListService {
         devList.setCompanyId(user.getCompanyId());
         return devListMapper.selectDevListList(devList);
     }
+
+    /**
+     * 查询所以未配置的计数器硬件
+     * @return
+     */
+    @Override
+    public List<DevList> selectJSDevNotConfig() {
+        User user = JwtUtil.getUser();
+        if (user == null) {
+            return Collections.emptyList();
+        }
+        return devListMapper.selectJSDevNotConfig(user.getCompanyId());
+    }
+
+    /**
+     * 删除硬件信息
+     * @param id 硬件主键id
+     * @return 结果
+     */
+    @Override
+    public int removeDevInfo(Integer id) {
+        DevList devList = devListMapper.selectDevListById(id);
+        if (devList == null) {
+            throw new BusinessException("硬件不存在或被删除");
+        }
+        if (DevConstants.DEV_SIGN_USED == devList.getSign()) {
+            throw new BusinessException("被配置的硬件不能删除");
+        }
+        return devListMapper.deleteDevListById(id);
+    }
 }

@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -98,10 +97,10 @@ public class InitDataManageController extends BaseController {
     }
 
     /**
-     * 根据硬件编码查询对应的工单信息
+     * 根据硬件编码拉取工单信息
      *
      * @param code 硬件编码
-     * @return
+     * @return 工单信息
      */
     @ResponseBody
     @RequestMapping("/w/{code}")
@@ -112,7 +111,8 @@ public class InitDataManageController extends BaseController {
     /**
      * 数据上报接口
      *
-     * @return
+     * @param data 上传数据
+     * @return 结果
      */
     @ResponseBody
     @RequestMapping("/workData")
@@ -124,7 +124,7 @@ public class InitDataManageController extends BaseController {
      * 异常上报
      *
      * @param code 硬件编码
-     * @return
+     * @return 结果
      */
     @ResponseBody
     @RequestMapping("/e/{code}")
@@ -132,46 +132,17 @@ public class InitDataManageController extends BaseController {
         return iInitDataManageService.workEx(code);
     }
 
-//	/**
-//	 * 获取各个用户的服务器请求地址
-//	 * @return
-//	 */
-//	@ResponseBody
-//	@RequestMapping("/path/{code}")
-//	public Map<String,Object> getPath(@PathVariable("code")String code){
-//		Map<String,Object> map = new HashMap<>();
-//		map.put("status",1);
-//		map.put("path","http://39.108.187.126:8088");
-//		return map;
-//	}
-
     /**
      * 车间工单通过在机器设备上扫描绑定开始操作
      *
      * @param code      设置绑定的硬件编号
      * @param orderCode 工单号
-     * @return
+     * @return 结果
      */
     @ResponseBody
     @RequestMapping("/startWork/{code}/{orderCode}")
     public AjaxResult startWorkOrder(@PathVariable("code") String code, @PathVariable("orderCode") String orderCode) {
         return iInitDataManageService.startWorkOrder(code, orderCode);
-    }
-
-
-    /**
-     * 机器设备信息上传接口
-     */
-    @RequestMapping("/uploadNum")
-    @ResponseBody
-    public Map<String, Object> uploadNum(String phone,Integer num,Integer lineId) {
-        System.out.println("========== 进入机器设备信息上传方法 ===============");
-        Map<String,Object> map = new HashMap<>(16);
-        System.out.println(phone);
-        System.out.println(num);
-        System.out.println(lineId);
-        map.put("code",1);
-        return map;
     }
 
 }

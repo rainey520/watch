@@ -45,7 +45,7 @@ public interface IProductionLineService
      * @param productionLine 生产线信息
      * @return 结果
      */
-	public int updateProductionLine(ProductionLine productionLine,HttpServletRequest request);
+	public int updateProductionLine(ProductionLine productionLine);
 
 		
 	/**
@@ -54,7 +54,7 @@ public interface IProductionLineService
      * @param id 需要删除的数据ID
      * @return 结果
      */
-	public int deleteProductionLineById(Integer id,HttpServletRequest request);
+	public int deleteProductionLineById(Integer id);
 
 	/**
 	 * 查询对应产线已经配置的硬件信息
@@ -117,4 +117,10 @@ public interface IProductionLineService
 	 * @return 结果
 	 */
     int changeStatus(ProductionLine line);
+
+	/**
+	 * 拉取在线用户的产线列表
+	 * @return 产线列表
+	 */
+	List<ProductionLine> selectMyLineList();
 }

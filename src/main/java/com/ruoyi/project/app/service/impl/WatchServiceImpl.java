@@ -1,5 +1,6 @@
 package com.ruoyi.project.app.service.impl;
 
+import com.ruoyi.common.constant.CompanyConstants;
 import com.ruoyi.common.constant.WorkConstants;
 import com.ruoyi.common.support.Convert;
 import com.ruoyi.common.utils.CodeUtils;
@@ -12,9 +13,15 @@ import com.ruoyi.project.app.domain.WatchInfo;
 import com.ruoyi.project.app.service.IWatchService;
 import com.ruoyi.project.device.devCompany.domain.DevCompany;
 import com.ruoyi.project.device.devCompany.mapper.DevCompanyMapper;
+import com.ruoyi.project.device.devDeviceCounts.mapper.DevDataLogMapper;
 import com.ruoyi.project.device.devList.domain.DevList;
 import com.ruoyi.project.device.devList.mapper.DevListMapper;
+import com.ruoyi.project.page.pageInfo.domain.PageReal;
+import com.ruoyi.project.page.pageInfo.domain.PageStandard;
 import com.ruoyi.project.page.pageInfo.domain.PageTem;
+import com.ruoyi.project.production.devWorkData.mapper.DevWorkDataMapper;
+import com.ruoyi.project.production.devWorkDayHour.domain.DevWorkDayHour;
+import com.ruoyi.project.production.devWorkDayHour.mapper.DevWorkDayHourMapper;
 import com.ruoyi.project.production.devWorkOrder.domain.DevWorkOrder;
 import com.ruoyi.project.production.devWorkOrder.domain.WorkLog;
 import com.ruoyi.project.production.devWorkOrder.mapper.DevWorkOrderMapper;
@@ -84,6 +91,15 @@ public class WatchServiceImpl implements IWatchService {
     @Autowired
     private DevListMapper devListMapper;
 
+    @Autowired
+    private DevDataLogMapper devDataLogMapper;
+
+    @Autowired
+    private DevWorkDayHourMapper dayHourMapper;
+
+    @Autowired
+    private DevWorkDataMapper workDataMapper;
+
     /**
      * 拉取看板信息
      *
@@ -120,6 +136,14 @@ public class WatchServiceImpl implements IWatchService {
                 WatchDetail watchDetail = new WatchDetail();
                 // 查看产线信息
                 ProductionLine line = lineMapper.selectProductionLineById(watchInfo.getLineId());
+                // 责任人名称
+                User user = userMapper.selectUserInfoById(line.getDeviceLiable() == null ? 0 : line.getDeviceLiable());
+                String userName = "-";
+                if (user != null && StringUtils.isNotEmpty(user.getUserName())) {
+                    userName = user.getUserName();
+                }
+                line.setDeviceLiableName(userName);
+
                 if (line == null) {
                     map.put("msg", "产线不存在或被删除");
                     map.put("code", 1);
@@ -141,16 +165,43 @@ public class WatchServiceImpl implements IWatchService {
                 // 查看工单异常信息
                 List<WorkExceptionList> excList = workExcMapper.selectWorkExceAllByWorkId(workOrder.getId());
                 watchDetail.setExcList(excList);
-                // 查看拉长输入明细
-                watchInfo.setWorkId(workOrder.getId());
-                watchInfo.appStartPage();
-                WorkLog wk = new WorkLog();
-                wk.setWorkId(workOrder.getId());
-                wk.setCompanyId(companyId);
-                wk.setPageNum(watchInfo.getPageNum());
-                wk.setPageSize(watchInfo.getPageSize());
-                List<WorkLog> workLogList = workLogMapper.selectWorkLogListByWatchInfo(wk);
-                watchDetail.setWorkLogList(workLogList);
+                // 产线为手动模式查询对应拉长输入记录
+                if (CompanyConstants.LINE_COLLECT_MANUAL.equals(line.getManual())) {
+                    // 查看拉长输入明细
+                    watchInfo.setWorkId(workOrder.getId());
+                    watchInfo.appStartPage();
+                    WorkLog wk = new WorkLog();
+                    wk.setWorkId(workOrder.getId());
+                    wk.setCompanyId(companyId);
+                    wk.setPageNum(watchInfo.getPageNum());
+                    wk.setPageSize(watchInfo.getPageSize());
+                    List<WorkLog> workLogList = workLogMapper.selectWorkLogListByWatchInfo(wk);
+                    watchDetail.setWorkLogList(workLogList);
+
+                    // 产线为自动模式，查询每小时累计产量
+                } else {
+                    PageStandard standard = new PageStandard(workOrder);
+                    watchDetail.setStandard(standard);
+                    //查询产线数据标识工位
+                    Workstation workstation = workstationMapper.selectWorkstationSignByLineId(line.getId(), line.getCompanyId());
+                    //统计该时间段的数据
+                    int r = 0;
+                    DevWorkDayHour hour = null;
+                    if (workstation != null && workOrder != null) {
+                        int devId = workstation.getDevId() == null ? 0 : workstation.getDevId();
+                        r = devDataLogMapper.selectLineWorkSysTemData(line.getCompanyId(), line.getId(),
+                                workOrder.getId(), devId, workstation.getId(), WorkConstants.SING_LINE);
+                        hour = dayHourMapper.selectInfoByCompanyLineWorkDevIo(line.getCompanyId(), line.getId(), workOrder.getId(), devId, workstation.getId());
+                    }
+                    //实际产量
+                    PageReal real = new PageReal(hour, r);
+                    watchDetail.setReal(real);
+
+                    // 查询产线对应的非有效数据工位的计数情况
+                    watchDetail.setStationDataList(workDataMapper.selectDevWorkDataNotSignByLineId(line.getCompanyId(), line.getId(), workOrder.getId()));
+
+                }
+
                 info.setWatchDetail(watchDetail);
                 map.put("msg", "请求成功");
                 map.put("data", info);
@@ -316,29 +367,29 @@ public class WatchServiceImpl implements IWatchService {
                 // 查询硬件信息
                 DevList devList = devListMapper.selectDevListByCode(index.getWatchCode());
                 if (devList == null || devList.getCompanyId() == null) {
-                    map.put("msg","看板编码不存在或未归属公司");
-                    map.put("code",0);
+                    map.put("msg", "看板编码不存在或未归属公司");
+                    map.put("code", 0);
                     return map;
                 }
                 // 查询工位信息
                 Workstation workstation = workstationMapper.selectInfoByDevice(0, devList.getId(), 0);
                 if (workstation == null) {
-                    map.put("msg","工位不存在或被删除");
-                    map.put("code",0);
+                    map.put("msg", "工位不存在或被删除");
+                    map.put("code", 0);
                     return map;
                 }
                 // 查询产线信息
                 ProductionLine line = lineMapper.selectProductionLineById(workstation.getLineId());
                 if (line == null) {
-                    map.put("msg","产线不存在或被删除");
-                    map.put("code",0);
+                    map.put("msg", "产线不存在或被删除");
+                    map.put("code", 0);
                     return map;
                 }
                 // 查询正在进行的工单信息
                 DevWorkOrder workOrder = workOrderMapper.selectWorkByCompandAndLine(devList.getCompanyId(), line.getId(), WorkConstants.SING_LINE);
                 if (workOrder == null) {
-                    map.put("msg","没有正在进行的工单信息");
-                    map.put("code",0);
+                    map.put("msg", "没有正在进行的工单信息");
+                    map.put("code", 0);
                     return map;
                 }
                 // 查询对应异常类型是否存在
@@ -360,7 +411,7 @@ public class WatchServiceImpl implements IWatchService {
                 exceptionList.setRemark("工位:" + workstation.getwName() + ",看板编码：" + index.getWatchCode() + ",上报异常");
                 exceptionList.setCreateTime(new Date());
                 workExcMapper.insertWorkExceptionList(exceptionList);
-                map.put("msg","上报成功");
+                map.put("msg", "上报成功");
                 map.put("code", 1);
                 return map;
 

@@ -2,6 +2,7 @@ package com.ruoyi.project.monitor.job.task;
 
 import com.ruoyi.framework.web.controller.BaseController;
 import com.ruoyi.project.monitor.job.service.IJobService;
+import com.ruoyi.project.production.devWorkDayHour.service.IDevWorkDayHourService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +17,9 @@ public class RyTask extends BaseController {
     @Autowired
     private IJobService jobService;
 
+    @Autowired
+    private IDevWorkDayHourService workDayHourService;
+
     public void ryParams(String params) {
         System.out.println("执行有参方法：" + params);
     }
@@ -29,5 +33,13 @@ public class RyTask extends BaseController {
      */
     public void deleteInvalidTime(){
         jobService.deleteInvalidTime();
+    }
+
+
+    /**
+     * 计算工单24小时记录
+     */
+    public void countWorkHourNum(){
+        workDayHourService.selectCalcDataLog();
     }
 }

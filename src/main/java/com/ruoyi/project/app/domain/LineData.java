@@ -18,6 +18,16 @@ public class LineData implements Serializable {
     private Integer lineId;
     /** 确认标记 0、未确认，1、确认更新 */
     private Integer confirmTag;
+    /** 工位id */
+    private Integer stationId;
+
+    public Integer getStationId() {
+        return stationId;
+    }
+
+    public void setStationId(Integer stationId) {
+        this.stationId = stationId;
+    }
 
     public Integer getConfirmTag() {
         return confirmTag;
@@ -58,6 +68,7 @@ public class LineData implements Serializable {
                 ", jsCode='" + jsCode + '\'' +
                 ", lineId=" + lineId +
                 ", confirmTag=" + confirmTag +
+                ", stationId=" + stationId +
                 '}';
     }
 }

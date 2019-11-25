@@ -87,10 +87,6 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="sopId != null  ">sop_id = #{sopId},</if>
             <if test="devId != null  ">dev_id = #{devId},</if>
             dev_code = #{devCode},
-            <if test="cId != null  ">c_id = #{cId},</if>
-            c_code = #{cCode},
-            <if test="eId != null  ">e_id = #{eId},</if>
-            e_code = #{eCode},
             <if test="sign != null  ">sign = #{sign},</if>
             <if test="cTime != null  ">c_time = #{cTime},</if>
             <if test="defId != null  ">def_id = #{defId},</if>
@@ -155,7 +151,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <!--通过产线id查询工位列表信息-->
     <select id="selectWorkstationListByLineId" resultMap="WorkstationResult">
-        SELECT * FROM tab_workstation where company_id = #{companyId} and line_id = #{lineId} and dev_id > 0;;
+        SELECT * FROM tab_workstation where company_id = #{companyId} and line_id = #{lineId} and dev_id > 0;
     </select>
 
     <!--查询硬件名称-->

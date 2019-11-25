@@ -135,18 +135,18 @@ gen:
   tablePrefix: tab_
 
 page:
-  url: http://47.106.177.50:8081/t/
-#  url: http://172.16.30.134:8081/t/
+#  url: http://47.106.177.50:8081/t/
+  url: http://172.16.30.31:8081/t/
 
 img:
-  url: http://47.106.177.50:8081/profile/avatar/
-#  url: http://172.16.30.134:8081/profile/avatar/
+#  url: http://47.106.177.50:8081/profile/avatar/
+  url: http://172.16.30.31:8081/profile/avatar/
 
 file:
-  url: http://47.106.177.50:8081/profile/upload/
-  iso: http://47.106.177.50:8081/profile/
-#  url: http://172.16.30.134:8081/profile/upload/
-#  iso: http://172.16.30.134:8081/profile/
+#  url: http://47.106.177.50:8081/profile/upload/
+#  iso: http://47.106.177.50:8081/profile/
+  url: http://172.16.30.31:8081/profile/upload/
+  iso: http://172.16.30.31:8081/profile/
 
 baidu:
   appId: 16721729

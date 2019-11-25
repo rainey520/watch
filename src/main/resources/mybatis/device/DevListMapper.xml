@@ -114,16 +114,16 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         update dev_list set sign = #{sign},dev_type=#{devType},device_name = #{deviceName} where id = #{id}
     </update>
 
-	<update id="deleteDevListById" parameterType="Integer">
-        update  dev_list set def_id =1  where id = #{id}
-    </update>
+	<delete id="deleteDevListById" parameterType="Integer">
+        delete from dev_list where id = #{id}
+    </delete>
 	
-    <update id="deleteDevListByIds" parameterType="String">
-        update  dev_list set def_id =1 where id in
+    <delete id="deleteDevListByIds" parameterType="String">
+        delete  from dev_list where id in
         <foreach item="id" collection="array" open="(" separator="," close=")">
             #{id}
         </foreach>
-    </update>
+    </delete>
 
     <resultMap id="DevListAndIo" type="com.ruoyi.project.device.devList.domain.DevList">
         <result property="id"    column="id"    />
@@ -220,5 +220,18 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <!--更新硬件关联的产线信息-->
     <update id="updateDevLineTag">
          update dev_list set sign = #{sign}, device_name = #{deviceName},line_id = #{lineId} where device_id = #{code}
+    </update>
+
+    <!--查询所以未配置的计数器硬件信息-->
+    <select id="selectJSDevNotConfig" resultMap="DevListResult">
+        <include refid="selectDevListVo"/>
+        <where>
+            and def_id = 0 and company_id = #{companyId} and sign = 0 and device_status = 1 and device_id like concat ('JS%');
+        </where>
+    </select>
+
+    <!--修改旧的硬件信息-->
+    <update id="updateJsDevListInfo">
+         update dev_list set device_name = #{deviceName},sign = #{sign},dev_type = #{devType},company_id = #{companyId} where id = #{id}
     </update>
 </mapper>

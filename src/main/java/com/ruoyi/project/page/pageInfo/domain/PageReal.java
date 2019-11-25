@@ -35,23 +35,23 @@ public class PageReal {
     public PageReal(DevWorkDayHour hour, int r) {
         this.hour = hour;
         this.r = r;
-        this.r7 = hour == null?0:getData(7,hour.getHour7());
-        this.r8 = hour == null?0:getData(8,hour.getHour8());
-        this.r9 = hour == null?0:getData(9,hour.getHour9());
-        this.r10 = hour == null?0:getData(10,hour.getHour10());
-        this.r11 = hour == null?0:getData(11,hour.getHour11());
-        this.r12 = hour == null?0:getData(12,hour.getHour12());
-        this.r13 = hour == null?0:getData(13,hour.getHour13());
-        this.r14 = hour == null?0:getData(14,hour.getHour14());
-        this.r15 = hour == null?0:getData(15,hour.getHour15());
-        this.r16 = hour == null?0:getData(16,hour.getHour16());
-        this.r17 = hour == null?0:getData(17,hour.getHour17());
-        this.r18 = hour == null?0:getData(18,hour.getHour18());
-        this.r19 = hour == null?0:getData(19,hour.getHour19());
-        this.r20 = hour == null?0:getData(20,hour.getHour20());
-        this.r21 = hour == null?0:getData(21,hour.getHour21());
-        this.r22 = hour == null?0:getData(22,hour.getHour22());
-        this.r23 = hour == null?0:getData(23,hour.getHour23());
+        this.r7 = hour == null ? 0 : getData(7, hour.getHour7());
+        this.r8 = hour == null ? 0 : getData(8, hour.getHour8());
+        this.r9 = hour == null ? 0 : getData(9, hour.getHour9());
+        this.r10 = hour == null ? 0 : getData(10, hour.getHour10());
+        this.r11 = hour == null ? 0 : getData(11, hour.getHour11());
+        this.r12 = hour == null ? 0 : getData(12, hour.getHour12());
+        this.r13 = hour == null ? 0 : getData(13, hour.getHour13());
+        this.r14 = hour == null ? 0 : getData(14, hour.getHour14());
+        this.r15 = hour == null ? 0 : getData(15, hour.getHour15());
+        this.r16 = hour == null ? 0 : getData(16, hour.getHour16());
+        this.r17 = hour == null ? 0 : getData(17, hour.getHour17());
+        this.r18 = hour == null ? 0 : getData(18, hour.getHour18());
+        this.r19 = hour == null ? 0 : getData(19, hour.getHour19());
+        this.r20 = hour == null ? 0 : getData(20, hour.getHour20());
+        this.r21 = hour == null ? 0 : getData(21, hour.getHour21());
+        this.r22 = hour == null ? 0 : getData(22, hour.getHour22());
+        this.r23 = hour == null ? 0 : getData(23, hour.getHour23());
     }
 
     public DevWorkDayHour getHour() {
@@ -209,15 +209,16 @@ public class PageReal {
 
     /**
      * 设置相关数据
+     *
      * @param date 时间
      * @return
      */
-    private int getData(int date,int val){
+    private int getData(int date, int val) {
         //获取当前系统小时数
         int hour = TimeUtil.getHour(new Date());
-        if(hour == date){
+        if (hour == date) {
             return r;
-        }else{
+        } else {
             return val;
         }
     }

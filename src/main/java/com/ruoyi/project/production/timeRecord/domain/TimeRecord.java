@@ -1,8 +1,10 @@
 package com.ruoyi.project.production.timeRecord.domain;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.ruoyi.framework.web.domain.BaseEntity;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
-import com.ruoyi.framework.web.domain.BaseEntity;
+
 import java.util.Date;
 
 /**
@@ -34,6 +36,7 @@ public class TimeRecord extends BaseEntity
 	/** 手动调整工时 */
 	private Float changeHour;
 	/** 记录日期年月日 */
+	@JsonFormat(pattern = "yyyy-MM-dd")
 	private Date recordDate;
 	/** 填写输入标记 0、还有未录入完整的数据，1、录入信息完整 */
 	private Integer inputFlag;

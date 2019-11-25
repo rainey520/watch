@@ -131,35 +131,36 @@ public class PageStandard {
 
     /**
      * 设置相关数据
+     *
      * @param date 时间
      * @return
      */
-    private int getData(int date){
-        if(this.getDevWorkOrder() == null){
-            return  0;
+    private int getData(int date) {
+        if (this.getDevWorkOrder() == null) {
+            return 0;
         }
         int startHour = TimeUtil.getHour(this.getDevWorkOrder().getStartTime());
-        if(startHour > date){
+        if (startHour > date) {
             return 0;
         }
 
-        if(startHour == date){
+        if (startHour == date) {
             int nowDay = TimeUtil.getHour(new Date());
             //实时计算
-            float val = TimeUtil.getDateDel(this.getDevWorkOrder().getStartTime(),nowDay == startHour?new Date(): TimeUtil.getEndHour(this.getDevWorkOrder().getStartTime()));
-            int a = (int) (this.getDevWorkOrder().getProductStandardHour() *val);
+            float val = TimeUtil.getDateDel(this.getDevWorkOrder().getStartTime(), nowDay == startHour ? new Date() : TimeUtil.getEndHour(this.getDevWorkOrder().getStartTime()));
+            int a = (int) (this.getDevWorkOrder().getProductStandardHour() * val);
             return a;
         }
         //标记时间是否与当前系统
         //获取当前系统小时数
         int hour = TimeUtil.getHour(new Date());
-        if(hour == date){
+        if (hour == date) {
             //实时计算
-           float val = TimeUtil.getDateDel(TimeUtil.getSystemDate(),new Date());
-            return (int) (this.getDevWorkOrder().getProductStandardHour() *val);
-        }else if(date < hour){
+            float val = TimeUtil.getDateDel(TimeUtil.getSystemDate(), new Date());
+            return (int) (this.getDevWorkOrder().getProductStandardHour() * val);
+        } else if (date < hour) {
             return this.getDevWorkOrder().getProductStandardHour();
-        }else{
+        } else {
             return 0;
         }
     }

@@ -19,7 +19,6 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="cumulativeNum"    column="cumulative_num"    />
         <result property="manualNum"    column="manual_num"    />
         <result property="createTime"    column="create_time"    />
-        <result property="cumulativeNumber"    column="cumulative_number"    />
         <result property="directPassRate"    column="direct_pass_rate"    />
         <result property="paramConfig"    column="paramConfig"    />
         <result property="ioSign"    column="io_sign"    />
@@ -28,7 +27,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 	
 	<sql id="selectDevWorkDataVo">
         select data_id, company_id, line_id, work_id, dev_id, dev_name, io_id, io_name, io_order, data_sign,io_sign,
-        initial_data, cumulative_num, manual_num, create_time,cumulative_number,direct_pass_rate,paramConfig,sc_type from dev_work_data
+        initial_data, cumulative_num, manual_num, create_time,direct_pass_rate,paramConfig,sc_type from dev_work_data
     </sql>
 	
     <select id="selectDevWorkDataList" parameterType="DevWorkData" resultMap="DevWorkDataResult">
@@ -151,12 +150,30 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <!--查询对应公司对应工单产线配置已作为标记数据的工单数据信息-->
     <select id="selectWorkDataByIosign" resultMap="DevWorkDataResult">
          SELECT * FROM dev_work_data where company_id= #{companyId} and work_id = #{workId} and line_id = #{lineId}
-          and dev_id = #{devId} and io_sign = 1 and sc_type = #{scType}
+          and dev_id = #{devId} and io_sign = 1 and sc_type = #{scType} limit 1;
     </select>
 
     <!--查询车间对应工单的累计产量信息-->
     <select id="selectHouseWorkDataActualNum" resultType="com.ruoyi.project.production.devWorkOrder.domain.DevWorkOrder">
         SELECT coalesce(sum(cumulative_num),0) as cumulativeNumber FROM dev_work_data
         where company_id = #{companyId} and line_id = #{lineId} and work_id = #{workId} and sc_type = #{scType} group by work_id
+    </select>
+
+
+    <resultMap type="DevWorkData" id="DevWorkDataResult1">
+        <result property="ioId"    column="io_id"    />
+        <result property="cumulativeNum"    column="cumulative_num"    />
+        <association property="devName" column="io_id" select="selectStationName">
+            <result property="devName" column="id"/>
+        </association>
+    </resultMap>
+    <!--查询工位名称-->
+    <select id="selectStationName" resultType="java.lang.String">
+        SELECT w_name FROM tab_workstation where id = #{ioId};
+    </select>
+    <!--查询产线对应的非有效数据工位的计数情况-->
+    <select id="selectDevWorkDataNotSignByLineId" resultMap="DevWorkDataResult1">
+        SELECT * FROM dev_work_data
+        where company_id = #{companyId} and line_id = #{lineId} and work_id = #{workId} and io_sign != 1
     </select>
 </mapper>

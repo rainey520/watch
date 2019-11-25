@@ -2,6 +2,7 @@ package com.ruoyi.project.production.productionLine.domain;
 
 import com.ruoyi.framework.aspectj.lang.annotation.Excel;
 import com.ruoyi.framework.web.domain.BaseEntity;
+import com.ruoyi.project.production.timeRecord.domain.TimeRecord;
 import com.ruoyi.project.production.workstation.domain.Workstation;
 import com.ruoyi.project.system.user.domain.User;
 
@@ -69,11 +70,9 @@ public class ProductionLine extends BaseEntity
 	//自定义数据数组
 	private List<String> paramArray;
 
-	/** 作业指导书
-	 * */
+	/** 作业指导书*/
 	private Integer sopId;
-	/**产品编码配置
-	 * */
+	/**产品编码配置*/
 	private String productCodes;
 
 	private Integer edUser; // 工程部责任人
@@ -96,6 +95,16 @@ public class ProductionLine extends BaseEntity
 	private Integer  status;//状态
 
 	private List<Workstation> workstations;//对应产线所有工位
+	/** 考勤信息 */
+	private TimeRecord timeRecord;
+
+	public TimeRecord getTimeRecord() {
+		return timeRecord;
+	}
+
+	public void setTimeRecord(TimeRecord timeRecord) {
+		this.timeRecord = timeRecord;
+	}
 
 	public Integer getLineSign() {
 		return lineSign;

@@ -10,6 +10,7 @@ import com.ruoyi.project.production.devWorkOrder.domain.DevWorkOrder;
 import com.ruoyi.project.production.devWorkOrder.service.IDevWorkOrderService;
 import com.ruoyi.project.production.filesource.domain.FileSourceInfo;
 import com.ruoyi.project.production.filesource.service.IFileSourceInfoService;
+import com.ruoyi.project.production.productionLine.service.IProductionLineService;
 import com.ruoyi.project.production.report.domain.ComCost;
 import com.ruoyi.project.production.report.service.ICostService;
 import com.ruoyi.project.production.timeRecord.domain.TimeRecord;
@@ -64,6 +65,9 @@ public class WorkController {
     @Autowired
     private IDevCompanyService companyService;
 
+    @Autowired
+    private IProductionLineService lineService;
+
     /**
      * 编辑保存工单
      */
@@ -71,7 +75,7 @@ public class WorkController {
     public AjaxResult appWorkSave(@RequestBody DevWorkOrder workOrder) {
         try {
             int i = workOrderService.updateDevWorkOrder(workOrder);
-            return i > 0 ? AjaxResult.success(workOrder.getId()) : AjaxResult.error();
+            return i > 0 ? AjaxResult.success() : AjaxResult.error();
         } catch (BusinessException e) {
             return AjaxResult.error(e.getMessage());
         }
@@ -102,7 +106,7 @@ public class WorkController {
     }
 
     /**
-     * app 拉取异常类型列表信息
+     * app拉取异常类型列表信息
      */
     @RequestMapping("/workExcType")
     public Map<String, Object> workExcType() {
@@ -119,7 +123,7 @@ public class WorkController {
     }
 
     /**
-     * 拉取考勤信息
+     * 拉取昨天考勤信息
      */
     @RequestMapping("/timeRecord")
     public Map<String, Object> appSelectTimeRecord(@RequestBody TimeRecord timeRecord) {
@@ -129,7 +133,7 @@ public class WorkController {
         if (CompanyConstants.LINE_TIME_RECORD_NOT_CONFIRM.equals(record.getInputFlag())) {
             map.put("data",record);
             map.put("code", 0);
-            map.put("msg", "请求失败");
+            map.put("msg", "请填写昨日考勤信息");
             return map;
         } else {
             map.put("data", record);
@@ -137,6 +141,29 @@ public class WorkController {
             map.put("msg", "请求成功");
             return map;
         }
+    }
+
+    /**
+     * 拉取负责人的产线列表
+     */
+    @RequestMapping("/selectMyLineList")
+    public AjaxResult selectMyLineList(){
+        return AjaxResult.success(lineService.selectMyLineList());
+    }
+
+    /**
+     * 拉取今日考勤信息
+     */
+    @RequestMapping("/todayTime")
+    public AjaxResult appSelectTodayTime(@RequestBody TimeRecord timeRecord){
+        if (timeRecord != null && timeRecord.getLineId() != null) {
+            TimeRecord record = timeRecordService.selectTimeRecordByLineIdToday(timeRecord.getLineId());
+            if (record == null) {
+                record = new TimeRecord();
+            }
+            return AjaxResult.success(record);
+        }
+        return AjaxResult.error();
     }
 
     /**
@@ -156,7 +183,6 @@ public class WorkController {
                 return AjaxResult.success();
             }
         } catch (Exception e) {
-            e.printStackTrace();
             LOGGER.error("app端修改考勤信息出现异常：" + e.getMessage());
         }
         return AjaxResult.error();

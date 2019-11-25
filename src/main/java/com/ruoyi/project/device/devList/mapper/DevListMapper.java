@@ -183,4 +183,25 @@ public interface DevListMapper {
      * @return 结果
      */
     int updateDevLineTag(@Param("sign") Integer sign, @Param("deviceName") String deviceName, @Param("code") String code, @Param("lineId") Integer lineId);
+
+    /**
+     * 查询所有未配置的计数器硬件
+     * @return 结果
+     */
+    List<DevList> selectJSDevNotConfig(@Param("companyId") Integer companyId);
+
+    /**
+     * 修改旧的硬件信息
+     * @param id 硬件id
+     * @param deviceName 硬件备注
+     * @param companyId 公司id
+     * @param sign 硬件配置状态标记
+     * @param devType 硬件配置属性  0、流水线，1、车间
+     * @return 结果
+     */
+    int updateJsDevListInfo(@Param("id") Integer id,
+                         @Param("deviceName") String deviceName,
+                         @Param("companyId") Integer companyId,
+                         @Param("sign") Integer sign,
+                         @Param("devType") Integer devType);
 }

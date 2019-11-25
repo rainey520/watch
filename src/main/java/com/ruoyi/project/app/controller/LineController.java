@@ -1,9 +1,11 @@
 package com.ruoyi.project.app.controller;
 
+import com.ruoyi.common.exception.BusinessException;
 import com.ruoyi.framework.web.domain.AjaxResult;
 import com.ruoyi.project.app.domain.LineData;
 import com.ruoyi.project.app.service.ILineService;
-import com.ruoyi.project.device.api.form.WorkDataForm;
+import com.ruoyi.project.production.productionLine.domain.ProductionLine;
+import com.ruoyi.project.production.productionLine.service.IProductionLineService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,11 +24,16 @@ import java.util.Map;
 @RequestMapping("/app")
 public class LineController {
 
-    /** logger */
+    /**
+     * logger
+     */
     private static final Logger LOGGER = LoggerFactory.getLogger(LineController.class);
 
     @Autowired
     private ILineService lineService;
+
+    @Autowired
+    private IProductionLineService productionLineService;
 
 
     @RequestMapping("/line")
@@ -34,7 +41,7 @@ public class LineController {
         try {
             return AjaxResult.success(lineService.selectAllLine());
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("拉取所有产线出现异常：" + e.getMessage());
             return AjaxResult.error();
         }
     }
@@ -47,31 +54,38 @@ public class LineController {
         try {
             return AjaxResult.success(lineService.selectAllLineList());
         } catch (Exception e) {
+            LOGGER.error("app拉取所有的产线信息：" + e.getMessage());
             return AjaxResult.error();
         }
     }
 
     /**
-     * 计数器硬件端拉取工单信息
+     * 产线工位配置计数器编码
      */
-    @RequestMapping("/getWorkInfo")
-    public Map<String,Object> getWorkInfo(@RequestBody LineData lineData){
-        return lineService.getWorkInfo(lineData);
+    @RequestMapping("/lineCfJsCode")
+    public Map<String, Object> lineCfJsCode(@RequestBody LineData lineData) {
+        return lineService.lineCfJsCode(lineData);
     }
 
     /**
-     * 计数器上传计数信息
+     * 获取产线工位列表
      */
-    @RequestMapping("/uploadWorkInfo")
-    public Map<String,Object> uploadWorkInfo(@RequestBody WorkDataForm uploadInfo){
-        return lineService.uploadWorkInfo(uploadInfo);
+    @RequestMapping("/getStationList")
+    public Map<String, Object> getStationList(@RequestBody LineData lineData) {
+        return lineService.getStationList(lineData);
     }
 
     /**
-     * 产线计数器硬件关联配置
+     * 修改产线自动收集采集模式
      */
-    @RequestMapping("/lineConfigJsCode")
-    public Map<String,Object> lineConfigJsCode(@RequestBody LineData lineData){
-        return lineService.lineConfigJsCode(lineData);
+    @RequestMapping("/changeLineManual")
+    public AjaxResult changeLineManual(@RequestBody ProductionLine line) {
+        try {
+            int row = productionLineService.changeStatus(line);
+            return row > 0 ? AjaxResult.success() : AjaxResult.error();
+        } catch (BusinessException e) {
+            LOGGER.error("修改产线自动收集采集模式：" + e.getMessage());
+            return AjaxResult.error(e.getMessage());
+        }
     }
 }

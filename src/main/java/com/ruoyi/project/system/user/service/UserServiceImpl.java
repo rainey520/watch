@@ -502,6 +502,7 @@ public class UserServiceImpl implements IUserService {
         //新增用户信息
         user.randomSalt();
         user.setPassword(PasswordUtil.encryptPassword(user.getLoginName(), user.getPassword(), user.getSalt()));
+        // 公司管理员标记
         user.setSign(1);
         user.setTag("1");
         user.setUserName("普通用户");

@@ -1,17 +1,19 @@
 package com.ruoyi.project.production.productionLine.service;
 
+import com.ruoyi.common.constant.DevConstants;
 import com.ruoyi.common.constant.WorkConstants;
 import com.ruoyi.common.exception.BusinessException;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.framework.jwt.JwtUtil;
 import com.ruoyi.project.device.devCompany.domain.DevCompany;
 import com.ruoyi.project.device.devCompany.mapper.DevCompanyMapper;
-import com.ruoyi.project.device.devList.domain.DevList;
 import com.ruoyi.project.device.devList.mapper.DevListMapper;
 import com.ruoyi.project.production.devWorkOrder.domain.DevWorkOrder;
 import com.ruoyi.project.production.devWorkOrder.mapper.DevWorkOrderMapper;
 import com.ruoyi.project.production.productionLine.domain.ProductionLine;
 import com.ruoyi.project.production.productionLine.mapper.ProductionLineMapper;
+import com.ruoyi.project.production.timeRecord.domain.TimeRecord;
+import com.ruoyi.project.production.timeRecord.mapper.TimeRecordMapper;
 import com.ruoyi.project.production.workstation.domain.Workstation;
 import com.ruoyi.project.production.workstation.mapper.WorkstationMapper;
 import com.ruoyi.project.system.user.domain.User;
@@ -49,6 +51,9 @@ public class ProductionLineServiceImpl implements IProductionLineService {
 
     @Autowired
     private DevListMapper devListMapper;
+
+    @Autowired
+    private TimeRecordMapper timeRecordMapper;
 
 
     /**
@@ -133,9 +138,15 @@ public class ProductionLineServiceImpl implements IProductionLineService {
      * @return 结果
      */
     @Override
-    public int updateProductionLine(ProductionLine productionLine, HttpServletRequest request) {
+    public int updateProductionLine(ProductionLine productionLine) {
+        User sysUser = JwtUtil.getUser();
+        if (sysUser == null) {
+            throw new BusinessException("用户未登录或登录超时");
+        }
         ProductionLine line = productionLineMapper.selectProductionLineById(productionLine.getId());
-        User sysUser = JwtUtil.getTokenUser(request); // 在线用户
+        if (line == null) {
+            throw new BusinessException("产线不存在或被删除");
+        }
         checkDeviceLiable(sysUser, line);
         return productionLineMapper.updateProductionLine(productionLine);
     }
@@ -148,48 +159,38 @@ public class ProductionLineServiceImpl implements IProductionLineService {
      * @return 结果
      */
     @Override
-    @Transactional
-    public int deleteProductionLineById(Integer id, HttpServletRequest request) {
-        User sysUser = JwtUtil.getTokenUser(request); // 在线用户
-        ProductionLine productionLine = productionLineMapper.selectProductionLineById(id);
-        if (productionLine != null && !User.isAdmin(sysUser) && !sysUser.getLoginName().equals(sysUser.getCreateBy())) { // 非系统用户或者非注册用户
-            // 删除的时候判断是否为该工单的负责人
-            // 查询产线信息
-            checkDeviceLiable(sysUser, productionLine);
+    @Transactional(rollbackFor = Exception.class)
+    public int deleteProductionLineById(Integer id) {
+        User sysUser = JwtUtil.getUser();
+        if (sysUser == null) {
+            throw new BusinessException("用户未登录或登录超时");
         }
-        if (productionLine != null) {
-            //查询是否有工单信息
-            DevWorkOrder workOrder = devWorkOrderMapper.selectWorkByLineId(id);
-            if (workOrder != null) {
-                throw new BusinessException("该产线有未完成工单，不能删除...");
-            }
+        ProductionLine productionLine = productionLineMapper.selectProductionLineById(id);
+        if (productionLine == null) {
+            throw new BusinessException("产线不存在或被删除");
+        }
+        checkDeviceLiable(sysUser, productionLine);
+        //查询是否有工单信息
+        DevWorkOrder workOrder = devWorkOrderMapper.selectWorkByLineId(id);
+        if (workOrder != null) {
+            throw new BusinessException("该产线有未完成工单，不能删除...");
         }
         //查询对应产线的工位信息
         List<Workstation> workstations = workstationMapper.selectAllByLineId(id);
         if (workstations != null && workstations.size() > 0) {
-            DevList devList = null;
             for (Workstation workstation : workstations) {
                 //将对应硬件设置为未配置
                 if (workstation.getDevId() > 0) {
-                    devList = devListMapper.selectDevListById(workstation.getDevId());
-                    if (devList != null) {
-                        devList.setSign(0);
-                        devListMapper.updateDevSign(devList);
-                    }
+                    devListMapper.updateJsDevListInfo(workstation.getDevId(),null,productionLine.getCompanyId(),
+                            DevConstants.DEV_SIGN_NOT_USE,null);
                 }
                 if (workstation.getcId() > 0) {
-                    devList = devListMapper.selectDevListById(workstation.getcId());
-                    if (devList != null) {
-                        devList.setSign(0);
-                        devListMapper.updateDevSign(devList);
-                    }
+                    devListMapper.updateJsDevListInfo(workstation.getcId(),null,productionLine.getCompanyId(),
+                            DevConstants.DEV_SIGN_NOT_USE,null);
                 }
                 if (workstation.geteId() > 0) {
-                    devList = devListMapper.selectDevListById(workstation.geteId());
-                    if (devList != null) {
-                        devList.setSign(0);
-                        devListMapper.updateDevSign(devList);
-                    }
+                    devListMapper.updateJsDevListInfo(workstation.geteId(),null,productionLine.getCompanyId(),
+                            DevConstants.DEV_SIGN_NOT_USE,null);
                 }
                 //删除工位
                 workstationMapper.deleteWorkstationById(workstation.getId());
@@ -356,19 +357,27 @@ public class ProductionLineServiceImpl implements IProductionLineService {
         if (user == null) {
             return Collections.emptyList();
         }
+        User userUni = null;
         if (productionLine == null) {
             return productionLineMapper.selectAllDef0(user.getCompanyId());
         } else {
             productionLine.setCompanyId(user.getCompanyId());
             List<ProductionLine> productionLines = productionLineMapper.selectProductionLineList(productionLine);
             for (ProductionLine line : productionLines) {
-                user = userMapper.selectUserInfoById(line.getDeviceLiable() == null ? 0 : line.getDeviceLiable());
-                if (user != null) {
-                    line.setDeviceLiableName(user.getUserName());
+                if (user.getSign() == 1 || user.getUserId().intValue() == line.getDeviceLiable() || user.getUserId().intValue() == line.getDeviceLiableTow()) {
+                    // 有权限
+                    line.setLineSign(1);
+                } else {
+                    // 无权限
+                    line.setLineSign(0);
                 }
-                user = userMapper.selectUserInfoById(line.getDeviceLiableTow() == null ? 0 : line.getDeviceLiableTow());
-                if (user != null) {
-                    line.setDeviceLiableTowName(user.getUserName());
+                userUni = userMapper.selectUserInfoById(line.getDeviceLiable() == null ? 0 : line.getDeviceLiable());
+                if (userUni != null) {
+                    line.setDeviceLiableName(userUni.getUserName());
+                }
+                userUni = userMapper.selectUserInfoById(line.getDeviceLiableTow() == null ? 0 : line.getDeviceLiableTow());
+                if (userUni != null) {
+                    line.setDeviceLiableTowName(userUni.getUserName());
                 }
             }
             return productionLines;
@@ -389,6 +398,40 @@ public class ProductionLineServiceImpl implements IProductionLineService {
      */
     @Override
     public int changeStatus(ProductionLine line) {
+        // 查询产线信息
+        ProductionLine uniLine = productionLineMapper.selectProductionLineById(line.getId());
+        if (uniLine == null) {
+            throw new BusinessException("产线不存在或被删除");
+        }
+        User user = JwtUtil.getUser();
+        if (user == null) {
+            throw new BusinessException("用户未登录或登录超时");
+        }
+        if (user.getUserId() != uniLine.getDeviceLiable().intValue() && user.getUserId() != uniLine.getDeviceLiableTow().intValue()) {
+            throw new BusinessException("不是产线责任人");
+        }
         return productionLineMapper.updateLineStatus(line);
+    }
+
+    /**
+     * 拉取负责人的产线列表
+     * @return 产线列表
+     */
+    @Override
+    public List<ProductionLine> selectMyLineList() {
+        User user = JwtUtil.getUser();
+        if (user == null) {
+            return Collections.emptyList();
+        }
+        TimeRecord record;
+        List<ProductionLine> lineList = productionLineMapper.selectMyLineList(user.getCompanyId(), user.getUserId().intValue());
+        for (ProductionLine line : lineList) {
+            record = timeRecordMapper.selectTimeRecordByLineIdToday(user.getCompanyId(), line.getId());
+            if (record == null) {
+                record = new TimeRecord();
+            }
+            line.setTimeRecord(record);
+        }
+        return lineList;
     }
 }

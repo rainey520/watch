@@ -41,7 +41,7 @@ public interface IWorkstationService
      * @param workstation 工位配置信息
      * @return 结果
      */
-	public int insertWorkstation(Workstation workstation) throws Exception;
+	public int insertWorkstation(Workstation workstation);
 	
 	/**
      * 修改工位配置

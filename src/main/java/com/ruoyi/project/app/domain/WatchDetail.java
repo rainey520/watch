@@ -1,5 +1,8 @@
 package com.ruoyi.project.app.domain;
 
+import com.ruoyi.project.page.pageInfo.domain.PageReal;
+import com.ruoyi.project.page.pageInfo.domain.PageStandard;
+import com.ruoyi.project.production.devWorkData.domain.DevWorkData;
 import com.ruoyi.project.production.devWorkOrder.domain.DevWorkOrder;
 import com.ruoyi.project.production.devWorkOrder.domain.WorkLog;
 import com.ruoyi.project.production.productionLine.domain.ProductionLine;
@@ -18,14 +21,47 @@ public class WatchDetail implements Serializable {
     private static final long serialVersionUID = 1770290765496393891L;
     /** 产线信息 */
     private ProductionLine line;
-    /** 正在进行的工单信息 */
+    /**  */
     private DevWorkOrder workOrder;
     /** 工单异常信息 */
     private List<WorkExceptionList> excList;
-    /** 该工单录入明细 */
-    private List<WorkLog> workLogList;
+
     /** 当天工单信息 */
     private List<DevWorkOrder> todayWork;
+    /******************** 产线手动输入模式 ************************/
+    /** 该工单录入明细 */
+    private List<WorkLog> workLogList;
+    /******************** 产线自动采集模式 ************************/
+    /***  标准产量 */
+    private PageStandard standard;
+    /***  实际产量 */
+    private PageReal real;
+    /***  工位数据相关详情 */
+    private List<DevWorkData> stationDataList;
+
+    public List<DevWorkData> getStationDataList() {
+        return stationDataList;
+    }
+
+    public void setStationDataList(List<DevWorkData> stationDataList) {
+        this.stationDataList = stationDataList;
+    }
+
+    public PageStandard getStandard() {
+        return standard;
+    }
+
+    public void setStandard(PageStandard standard) {
+        this.standard = standard;
+    }
+
+    public PageReal getReal() {
+        return real;
+    }
+
+    public void setReal(PageReal real) {
+        this.real = real;
+    }
 
     public List<DevWorkOrder> getTodayWork() {
         return todayWork;

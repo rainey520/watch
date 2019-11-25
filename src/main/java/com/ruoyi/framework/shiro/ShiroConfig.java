@@ -133,6 +133,7 @@ public class ShiroConfig {
         filterRuleMap.put("/login", "anon");
         filterRuleMap.put("/watch/**", "anon");
         filterRuleMap.put("/app/**", "anon");
+        filterRuleMap.put("/work/**", "anon");
         filterRuleMap.put("/init/data", "anon");
         filterRuleMap.put("/system/user/checkLoginNameUnique", "anon");
         filterRuleMap.put("/device/devCompany/checkComNameUnique", "anon");

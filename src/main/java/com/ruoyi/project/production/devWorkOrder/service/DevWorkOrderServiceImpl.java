@@ -11,6 +11,7 @@ import cn.jpush.api.push.model.audience.Audience;
 import cn.jpush.api.push.model.notification.Notification;
 import com.alibaba.fastjson.JSON;
 import com.baidu.aip.ocr.AipOcr;
+import com.ruoyi.common.constant.CompanyConstants;
 import com.ruoyi.common.constant.UserConstants;
 import com.ruoyi.common.constant.WorkConstants;
 import com.ruoyi.common.exception.BusinessException;
@@ -29,6 +30,7 @@ import com.ruoyi.project.product.importConfig.domain.ImportConfig;
 import com.ruoyi.project.product.importConfig.mapper.ImportConfigMapper;
 import com.ruoyi.project.product.list.domain.DevProductList;
 import com.ruoyi.project.product.list.mapper.DevProductListMapper;
+import com.ruoyi.project.production.devWorkData.domain.DevWorkData;
 import com.ruoyi.project.production.devWorkData.mapper.DevWorkDataMapper;
 import com.ruoyi.project.production.devWorkOrder.domain.DevWorkOrder;
 import com.ruoyi.project.production.devWorkOrder.domain.Ocr;
@@ -43,12 +45,15 @@ import com.ruoyi.project.production.singleWork.domain.SingleWork;
 import com.ruoyi.project.production.singleWork.domain.SingleWorkOrder;
 import com.ruoyi.project.production.singleWork.mapper.SingleWorkMapper;
 import com.ruoyi.project.production.singleWork.mapper.SingleWorkOrderMapper;
+import com.ruoyi.project.production.workDayHour.domain.WorkDayHour;
+import com.ruoyi.project.production.workDayHour.mapper.WorkDayHourMapper;
 import com.ruoyi.project.production.workExceptionList.domain.WorkExceptionList;
 import com.ruoyi.project.production.workExceptionList.mapper.WorkExceptionListMapper;
 import com.ruoyi.project.production.workExceptionType.domain.WorkExceptionType;
 import com.ruoyi.project.production.workExceptionType.mapper.WorkExceptionTypeMapper;
 import com.ruoyi.project.production.workOrderChange.domain.WorkOrderChange;
 import com.ruoyi.project.production.workOrderChange.mapper.WorkOrderChangeMapper;
+import com.ruoyi.project.production.workstation.domain.Workstation;
 import com.ruoyi.project.production.workstation.mapper.WorkstationMapper;
 import com.ruoyi.project.quality.mesBatch.domain.MesBatch;
 import com.ruoyi.project.quality.mesBatch.domain.MesBatchDetail;
@@ -95,7 +100,10 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
     private DevWorkOrderMapper devWorkOrderMapper;
 
     @Autowired
-    private DevWorkDataMapper devWorkDataMapper;
+    private DevWorkDataMapper workDataMapper;
+
+    @Autowired
+    private WorkDayHourMapper workDayHourMapper;
 
     @Autowired
     private UserMapper userMapper;
@@ -216,8 +224,7 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
         if (devProductList == null) return 0;
         // 设置工单的相关信息
         setWorkInfo(devWorkOrder, u, devProductList);
-        devWorkOrderMapper.insertDevWorkOrder(devWorkOrder);
-        return 1;
+        return devWorkOrderMapper.insertDevWorkOrder(devWorkOrder);
     }
 
     /**
@@ -287,6 +294,10 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
         if (line == null) {
             throw new BusinessException("该工单所在产线不存在或被删除");
         }
+        // 自动采集模式工单产量手输入无效
+        if (CompanyConstants.LINE_COLLECT_AUTO.equals(line.getManual())) {
+            devWorkOrder.setCumulativeNumber(null);
+        }
         // 不是工单负责人
         if (one != userId.intValue() && tow != userId.intValue() && !u.getLoginName().equals("admin")) {
             throw new BusinessException("不是工单负责人");
@@ -294,7 +305,9 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
         // 消息推送生产看板
         JPushWatchMsg(company);
         // JPushMsg(workOrder);
-        if (StringUtils.isNotNull(devWorkOrder.getCumulativeNumber()) && devWorkOrder.getCumulativeNumber() > devWorkOrder.getOldInputNum()) {
+        // 手动情况新增拉长输入记录
+        if (CompanyConstants.LINE_COLLECT_MANUAL.equals(line.getManual()) && StringUtils.isNotNull(devWorkOrder.getCumulativeNumber()) &&
+                devWorkOrder.getCumulativeNumber() > devWorkOrder.getOldInputNum()) {
             // 新增拉长操作记录
             WorkLog workLog = new WorkLog();
             workLog.setCompanyId(u.getCompanyId());
@@ -310,7 +323,7 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
             if (workOrder.getOperationStatus().equals(WorkConstants.OPERATION_STATUS_STARTING)) {
                 totalHour += TimeUtil.getDateDel(workOrder.getSignTime(), new Date());
             }
-            workLog.setBzOutput((int) (totalHour * workOrder.getProductStandardHour()));
+            workLog.setBzOutput((int) (totalHour * devWorkOrder.getProductStandardHour()));
             workLog.setSjOutput(devWorkOrder.getCumulativeNumber() - devWorkOrder.getOldInputNum());
             workLog.setTotalOutput(devWorkOrder.getCumulativeNumber());
             workLog.setInputData(new Date());
@@ -401,6 +414,8 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
             if (devWorkOrder.getOperationStatus().equals(WorkConstants.OPERATION_STATUS_STARTING)) {
                 devWorkOrder.setOperationStatus(WorkConstants.OPERATION_STATUS_PAUSE);
                 devWorkOrder.setUpdateBy(user.getUserName());
+                //将其工单对应的数据需要重新记录初始值
+                workDataMapper.updateWorkSigInit(devWorkOrder.getId());
                 //计数时间
                 devWorkOrder.setSignHuor(devWorkOrder.getSignHuor() + TimeUtil.getDateDel(devWorkOrder.getSignTime(), new Date()));
 
@@ -428,6 +443,42 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
             JPushMsg(devWorkOrder);
             // 推送生产看板
             JPushWatchMsg(company);
+
+            // 通过产线id获取各个工位信息
+            List<Workstation> workstationList = workstationMapper.selectWorkstationListByLineId(user.getCompanyId(), devWorkOrder.getLineId());
+            DevWorkData workData = null;
+            WorkDayHour workDayHour = null;
+            if (StringUtils.isNotEmpty(workstationList)) {
+                for (Workstation workstation : workstationList) {
+                    // 初始化工单数据
+                    workData = new DevWorkData();
+                    workData.setWorkId(devWorkOrder.getId());
+                    workData.setCompanyId(devWorkOrder.getCompanyId());
+                    workData.setLineId(devWorkOrder.getLineId());
+                    workData.setScType(WorkConstants.SING_LINE);
+                    // 设置计数器硬件
+                    workData.setDevId(workstation.getDevId());
+                    workData.setDevName(workstation.getDevName());
+                    // 设置工位
+                    workData.setIoId(workstation.getId());
+                    workData.setCreateTime(new Date());
+                    workData.setIoSign(workstation.getSign());
+                    workDataMapper.insertDevWorkData(workData);
+
+                    // 初始化工单各个IO口每小时数据
+                    workDayHour = new WorkDayHour();
+                    workDayHour.setWorkId(devWorkOrder.getId());
+                    workDayHour.setCompanyId(devWorkOrder.getCompanyId());
+                    workDayHour.setLineId(devWorkOrder.getLineId());
+                    // 初始化硬件名称以及工位信息
+                    workDayHour.setDevId(workstation.getDevId());
+                    workDayHour.setDevName(workstation.getDevName());
+                    workDayHour.setIoId(workstation.getId());
+                    workDayHour.setDataTime(new Date());
+                    workDayHour.setCreateTime(new Date());
+                    workDayHourMapper.insertWorkDayHour(workDayHour);
+                }
+            }
 
             // 修改工单的状态为进行中
             devWorkOrder.setWorkorderStatus(WorkConstants.WORK_STATUS_STARTING);
@@ -513,13 +564,8 @@ public class DevWorkOrderServiceImpl implements IDevWorkOrderService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public int submitWorkOrder(Integer id, Integer uid) {
-        User user = null;
-        if (uid == null) {
-            user = JwtUtil.getUser();
-        } else {
-            user = userMapper.selectUserInfoById(uid);
-        }
+    public int submitWorkOrder(Integer id) {
+        User user = JwtUtil.getUser();
         if (user == null) {
             throw new BusinessException(UserConstants.NOT_LOGIN);
         }
